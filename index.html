@@ -1198,6 +1198,9 @@
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
                 <div style="display: flex; gap: 20px;"><div><small>Выигрышей:</small> <div id="win-count-stat" class="editable-stat" onclick="editWinnerCounter('count')" style="font-size: 20px; font-weight: bold;">0</div></div><div><small>Всего вывел:</small> <div id="win-sum-stat" class="editable-stat" onclick="editWinnerCounter('sum')" style="font-size: 20px; font-weight: bold; color: var(--accent-neon-blue);">0 ₽</div></div></div>
                 <div><small>Всего депозитов:</small> <div id="win-dep-stat" class="editable-stat" onclick="editWinnerCounter('dep')" style="font-size: 20px; font-weight: bold; color: var(--accent-neon-blue);">0 ₽</div></div>
+                <div id="win-sub-status" onclick="toggleSubscriptionRostyasha1()" style="padding: 10px 14px; border-radius: 10px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); text-align: center; cursor: pointer; transition: 0.3s;" title="Нажмите чтобы переключить статус подписки">
+                    <span style="font-size: 12px; font-weight: 800; letter-spacing: 1px;">ПОДПИСКА НА rostyasha1: </span><span id="win-sub-text" style="font-size: 13px; font-weight: 900; color: #ef4444;">НЕТУ</span>
+                </div>
             </div>
             <div id="win-drop-history" style="overflow-y:auto; flex-grow:1; border-top: 1px solid #333; padding-top: 10px;"></div>
         </div>
@@ -1968,14 +1971,17 @@
                 removeParticipantFromFirebase(name);
             }
         }
+        function hasParticipantWon(name) {
+            return globalHistory.some(h => h.name.toLowerCase() === name.toLowerCase() && !h.isReroll);
+        }
         function updateFullParticipantsList() {
             const container = document.getElementById('full-participants-list');
             if (!container) return;
             const arr = Array.from(participants);
             let html = '';
             arr.forEach((u, i) => {
-                const isWinner = sessionWinners.has(u.toLowerCase());
-                const winnerLabel = isWinner ? '<span style="color:#eab308; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(234,179,8,0.8);">ВЫИГРЫВАЛ</span>' : '';
+                const isWinner = hasParticipantWon(u);
+                const winnerLabel = isWinner ? '<span style="color:#eab308; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(234,179,8,0.8);">ПОБЕДАЛ</span>' : '';
                 html += `<div class="participant-row"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span>${i+1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" checked onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
@@ -2196,6 +2202,39 @@
             } 
         }
         function editWinnerCounter(type) { if (!currentWinner) return; let val = prompt('Введите новое значение:'); if (val !== null) { if (type === 'count') document.getElementById('win-count-stat').innerText = val; if (type === 'sum') document.getElementById('win-sum-stat').innerText = parseInt(val).toLocaleString() + ' ₽'; if (type === 'dep') document.getElementById('win-dep-stat').innerText = parseInt(val).toLocaleString() + ' ₽'; } }
+        // ===== SUBSCRIPTION STATUS FOR rostyasha1 =====
+        function getSubscriptionsStorage() {
+            return JSON.parse(localStorage.getItem('bot_subscriptions') || '{}');
+        }
+        function isSubscribedToRostyasha1(name) {
+            const subs = getSubscriptionsStorage();
+            return !!subs[name.toLowerCase()];
+        }
+        function toggleSubscriptionRostyasha1() {
+            if (!currentWinner) return;
+            const subs = getSubscriptionsStorage();
+            const key = currentWinner.toLowerCase();
+            subs[key] = !subs[key];
+            localStorage.setItem('bot_subscriptions', JSON.stringify(subs));
+            updateSubscriptionDisplay();
+        }
+        function updateSubscriptionDisplay() {
+            const statusDiv = document.getElementById('win-sub-status');
+            const textSpan = document.getElementById('win-sub-text');
+            if (!statusDiv || !textSpan || !currentWinner) return;
+            const isSub = isSubscribedToRostyasha1(currentWinner);
+            if (isSub) {
+                textSpan.innerText = 'ЕСТЬ';
+                textSpan.style.color = '#22c55e';
+                statusDiv.style.background = 'rgba(34,197,94,0.1)';
+                statusDiv.style.borderColor = 'rgba(34,197,94,0.3)';
+            } else {
+                textSpan.innerText = 'НЕТУ';
+                textSpan.style.color = '#ef4444';
+                statusDiv.style.background = 'rgba(239,68,68,0.1)';
+                statusDiv.style.borderColor = 'rgba(239,68,68,0.3)';
+            }
+        }
         function showWinnerRef(name) {
             closeModals();
             currentWinner = name;
@@ -2215,6 +2254,7 @@
             statCard.className = 'win-card';
             statCard.style.borderColor = 'var(--accent-neon-blue)';
             document.getElementById('reroll-counter-display').innerText = 'Рероллов: ' + rerollCount;
+            updateSubscriptionDisplay();
             const userHistory = globalHistory.filter(h => h.name.toLowerCase() === name.toLowerCase() && !h.isReroll);
             const globalRerolls = globalHistory.filter(h => h.name.toLowerCase() === name.toLowerCase() && h.isReroll).length;
             const totalWon = userHistory.reduce((sum, h) => sum + (h.amount || 0), 0);
