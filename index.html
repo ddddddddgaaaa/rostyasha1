@@ -1981,7 +1981,7 @@
             let html = '';
             arr.forEach((u, i) => {
                 const isWinner = hasParticipantWon(u);
-                const winnerLabel = isWinner ? '<span style="color:#eab308; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(234,179,8,0.8);">ПОБЕДАЛ</span>' : '';
+                const winnerLabel = isWinner ? '<span style="color:#eab308; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(234,179,8,0.8);">ПОБЕЖДАЛ</span>' : '';
                 html += `<div class="participant-row"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span>${i+1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" checked onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
