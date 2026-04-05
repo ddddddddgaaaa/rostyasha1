@@ -464,78 +464,6 @@
             accent-color: #22c55e;
             cursor: pointer;
         }
-        .participants-toolbar {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            background: rgba(255,255,255,0.02);
-        }
-        .participants-toolbar .toolbar-row {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
-        }
-        .participants-toolbar .toolbar-row.compact {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-        .participants-toolbar select,
-        .participants-toolbar input[type="number"] {
-            width: 100%;
-            box-sizing: border-box;
-            font-size: 12px;
-            padding: 7px 8px;
-        }
-        .participants-toolbar label.filter-check {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #dbeafe;
-            cursor: pointer;
-        }
-        .participants-toolbar label.filter-check input {
-            width: 15px;
-            height: 15px;
-            accent-color: #22c55e;
-        }
-        .participants-summary {
-            font-size: 11px;
-            color: #93c5fd;
-            min-height: 16px;
-        }
-        .participant-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-        }
-        .participant-stats {
-            font-size: 11px;
-            color: #94a3b8;
-            white-space: nowrap;
-        }
-        .participant-badge.is-success {
-            background: rgba(34, 197, 94, 0.14);
-            border-color: rgba(34, 197, 94, 0.35);
-            color: #bbf7d0;
-        }
-        .participant-badge.is-danger {
-            background: rgba(239, 68, 68, 0.14);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: #fecaca;
-        }
-        .participant-badge.is-won {
-            background: rgba(234, 179, 8, 0.16);
-            border-color: rgba(234, 179, 8, 0.35);
-            color: #fde68a;
-        }
-        .participant-badge.is-muted {
-            background: rgba(148, 163, 184, 0.12);
-            border-color: rgba(148, 163, 184, 0.28);
-            color: #cbd5e1;
-        }
         .orange-chat {
             flex: 1;
             border: 1px solid var(--panel-border);
@@ -689,25 +617,6 @@
             box-sizing: border-box;
             padding: 12px 14px;
             border-radius: 10px;
-        }
-        .auth-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .auth-toggle-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            font-size: 12px;
-            color: #cbd5e1;
-        }
-        .auth-toggle-row label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
         }
         .auth-note {
             margin-top: 12px;
@@ -1157,6 +1066,10 @@
             <button class="btn-main btn-purple" onclick="instantRoll()">БЫСТРЫЙ РОЛЛ</button>
             <button class="btn-main" onclick="openStats()">АНАЛИТИКА ПРОЕКТОВ</button>
             <button class="btn-main" onclick="openHistory()">ИСТОРИЯ ВЫПАДЕНИЙ</button>
+            <label style="display:flex; align-items:center; gap:8px; margin:6px 0 4px; font-size:12px; color:#f8fafc; cursor:pointer;">
+                <input id="never-won-global-checkbox" type="checkbox" style="width:16px; height:16px; accent-color:#eab308;">
+                <span>Только те, кто никогда не выигрывал</span>
+            </label>
             <div style="margin-top: auto;">
                 <div id="timer" class="timer-display" onclick="enableTimerEdit()">00:10:00</div>
                 <input type="text" id="timer-input" style="display:none; width: 100%; background: #000; color: #ff1493; border: 1px solid #ff1493; font-size: 30px; text-align: center;">
@@ -1204,35 +1117,6 @@
             <div class="middle-split">
                 <div class="red-participants">
                     <h4>СПИСОК УЧАСТНИКОВ <span id="user-count" style="font-size: 18px; color: var(--accent-neon-blue); font-weight: 800;">0</span></h4>
-                    <div class="participants-toolbar">
-                        <div class="toolbar-row">
-                            <select id="participant-sub-filter" onchange="updateParticipantFilters()">
-                                <option value="all">Подписка: все</option>
-                                <option value="sub">Подписан</option>
-                                <option value="not_sub">Не подписан</option>
-                            </select>
-                            <select id="participant-win-filter" onchange="updateParticipantFilters()">
-                                <option value="all">Победы: все</option>
-                                <option value="won">Только побеждал</option>
-                                <option value="never">Никогда не побеждал</option>
-                            </select>
-                        </div>
-                        <div class="toolbar-row compact">
-                            <input id="participant-min-stream-msgs" type="number" min="0" placeholder="Сообщ. стрим" oninput="updateParticipantFilters()">
-                            <input id="participant-min-total-msgs" type="number" min="0" placeholder="Сообщ. всего" oninput="updateParticipantFilters()">
-                            <input id="participant-max-stream-minutes" type="number" min="0" placeholder="Минут макс." oninput="updateParticipantFilters()">
-                        </div>
-                        <div class="toolbar-row compact">
-                            <input id="participant-min-stream-minutes" type="number" min="0" placeholder="Минут стрим" oninput="updateParticipantFilters()">
-                            <input id="participant-min-total-hours" type="number" min="0" step="0.1" placeholder="Часов всего" oninput="updateParticipantFilters()">
-                            <button class="btn-main" style="margin:0; padding:9px 8px; font-size:10px;" onclick="clearParticipantFilters()">СБРОС ФИЛЬТРОВ</button>
-                        </div>
-                        <label class="filter-check">
-                            <input id="participant-never-won-only" type="checkbox" onchange="updateParticipantFilters()">
-                            <span>Только те, кто никогда не выпадал</span>
-                        </label>
-                        <div id="participants-summary" class="participants-summary"></div>
-                    </div>
                     <div id="full-participants-list"></div>
                     <button class="btn-main" style="margin: 10px 12px; width: calc(100% - 24px);" onclick="copyParticipants()">СКОПИРОВАТЬ УЧАСТНИКОВ</button>
                 </div>
@@ -1289,28 +1173,13 @@
     <div id="auth-modal" class="auth-modal">
         <div class="auth-card">
             <h2>Вход</h2>
-            <p>Укажи канал Twitch. Логин и пароль можно сохранить локально, чтобы не держать ссылку или данные на экране.</p>
+            <p>Укажи канал Twitch. После этого подключится чат.</p>
             <div class="auth-form">
                 <input type="text" id="auth-channel-input" placeholder="Канал Twitch без @" autocomplete="off">
-                <div class="auth-grid">
-                    <input type="text" id="auth-login-input" placeholder="Логин Twitch" autocomplete="username">
-                    <input type="password" id="auth-password-input" placeholder="Пароль / OAuth" autocomplete="current-password">
-                </div>
-                <div class="auth-toggle-row">
-                    <label>
-                        <input id="auth-save-credentials" type="checkbox">
-                        <span>Сохранить локально</span>
-                    </label>
-                    <label>
-                        <input id="auth-show-password" type="checkbox" onchange="toggleAuthPasswordVisibility()">
-                        <span>Показать пароль</span>
-                    </label>
-                </div>
                 <div style="display:flex; gap:8px;">
                     <button class="btn-main btn-purple" type="button" onclick="applyAuthSettings()">ПОДКЛЮЧИТЬ</button>
                 </div>
             </div>
-            <div class="auth-note">Чат всё ещё подключается анонимно. Эти поля сохранены для удобства в интерфейсе.</div>
         </div>
     </div>
 
@@ -1334,7 +1203,11 @@
                 <div style="display: flex; gap: 20px;"><div><small>Выигрышей:</small> <div id="win-count-stat" class="editable-stat" onclick="editWinnerCounter('count')" style="font-size: 20px; font-weight: bold;">0</div></div><div><small>Всего вывел:</small> <div id="win-sum-stat" class="editable-stat" onclick="editWinnerCounter('sum')" style="font-size: 20px; font-weight: bold; color: var(--accent-neon-blue);">0 ₽</div></div></div>
                 <div><small>Всего депозитов:</small> <div id="win-dep-stat" class="editable-stat" onclick="editWinnerCounter('dep')" style="font-size: 20px; font-weight: bold; color: var(--accent-neon-blue);">0 ₽</div></div>
                 <div id="win-sub-status" onclick="toggleSubscriptionRostyasha1()" style="padding: 10px 14px; border-radius: 10px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); text-align: center; cursor: pointer; transition: 0.3s;" title="Нажмите чтобы переключить статус подписки">
-                    <span style="font-size: 12px; font-weight: 800; letter-spacing: 1px;">ПОДПИСКА НА <span id="win-sub-channel">КАНАЛ</span>: </span><span id="win-sub-text" style="font-size: 13px; font-weight: 900; color: #ef4444;">НЕТУ</span>
+                    <span style="font-size: 12px; font-weight: 800; letter-spacing: 1px;">ПОДПИСКА НА rostyasha1: </span><span id="win-sub-text" style="font-size: 13px; font-weight: 900; color: #ef4444;">НЕТУ</span>
+                </div>
+                <div id="win-activity-stats" style="padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); font-size: 12px; line-height: 1.55; color: #cbd5e1;">
+                    <div><b style="color: var(--accent-neon-blue);">Этот стрим:</b> <span id="win-current-stream-stats">0 сообщ. • 0 мин</span></div>
+                    <div style="margin-top:4px;"><b style="color: var(--accent-neon-blue);">За всё время:</b> <span id="win-total-stream-stats">0 сообщ. • 0 ч</span></div>
                 </div>
             </div>
             <div id="win-drop-history" style="overflow-y:auto; flex-grow:1; border-top: 1px solid #333; padding-top: 10px;"></div>
@@ -1388,6 +1261,8 @@
         let isWheelSpinning = false; // флаг блокировки обновления wheelParticipants во время крута
         let pendingParticipants = JSON.parse(localStorage.getItem('bot_pending_participants') || '[]'); // участники, которые написали кодовое пока рулетка открыта
         let sessionWinners = new Set(); // участники, которые выиграли в текущей сессии
+        let authSettings = JSON.parse(localStorage.getItem('bot_auth_settings') || '{"channel":"","login":"","password":"","remember":false}');
+        const PARTICIPANT_ACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
         const wheelColors = ['#0f172a','#1e2937','#334155','#475569','#64748b','#1e3a8a','#312e81','#4338ca','#4c1d95','#6b21a8'];
         
         // Color coding based on sum ranges
@@ -1399,21 +1274,6 @@
             return '#64748b'; // default gray
         }
         let currentChannelName = localStorage.getItem('bot_channel_name') || '';
-        let authSettings = JSON.parse(localStorage.getItem('bot_auth_settings') || '{"channel":"","login":"","password":"","remember":false}');
-        let participantFilterState = {
-            subscription: 'all',
-            wins: 'all',
-            minStreamMessages: 0,
-            minTotalMessages: 0,
-            minStreamMinutes: 0,
-            maxStreamMinutes: null,
-            minTotalHours: 0,
-            onlyNeverWon: false
-        };
-        const PARTICIPANT_ACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
-        let participantProfilesSaveTimeout = null;
-        if (!authSettings || typeof authSettings !== 'object') authSettings = { channel: '', login: '', password: '', remember: false };
-        if (!authSettings.channel && currentChannelName) authSettings.channel = currentChannelName;
         const MODS = [];
         const VIPS = [];
         const B_MOD = '[MODERATOR] ';
@@ -1537,78 +1397,55 @@
             const key = getProfileKey(name);
             if (!key) return null;
             participantProfiles[key] = {
-                name,
-                tg: '',
-                totalMessages: 0,
-                currentStreamMessages: 0,
-                totalWatchMs: 0,
-                currentStreamWatchMs: 0,
-                currentStreamFirstSeenAt: null,
-                currentStreamLastSeenAt: null,
-                lastSeenAt: null,
-                ...(participantProfiles[key] || {})
+                ...(participantProfiles[key] || {}),
+                name: participantProfiles[key]?.name || name,
+                tg: participantProfiles[key]?.tg || '',
+                currentStreamMessages: participantProfiles[key]?.currentStreamMessages || 0,
+                totalMessages: participantProfiles[key]?.totalMessages || 0,
+                currentStreamWatchMs: participantProfiles[key]?.currentStreamWatchMs || 0,
+                totalWatchMs: participantProfiles[key]?.totalWatchMs || 0,
+                lastSeenAt: participantProfiles[key]?.lastSeenAt || 0
             };
-            if (!participantProfiles[key].name) participantProfiles[key].name = name;
             return participantProfiles[key];
         }
-        function resetCurrentStreamMetrics() {
+        function recordParticipantActivity(name) {
+            const profile = ensureParticipantProfile(name);
+            if (!profile) return;
+            const now = Date.now();
+            const lastSeenAt = Number(profile.lastSeenAt || 0);
+            if (lastSeenAt > 0 && now > lastSeenAt) {
+                const delta = Math.min(now - lastSeenAt, PARTICIPANT_ACTIVITY_TIMEOUT_MS);
+                profile.currentStreamWatchMs += delta;
+                profile.totalWatchMs += delta;
+            }
+            profile.currentStreamMessages += 1;
+            profile.totalMessages += 1;
+            profile.lastSeenAt = now;
+        }
+        function resetParticipantStreamActivity() {
             Object.keys(participantProfiles || {}).forEach((key) => {
                 const profile = participantProfiles[key];
                 if (!profile) return;
                 profile.currentStreamMessages = 0;
                 profile.currentStreamWatchMs = 0;
-                profile.currentStreamFirstSeenAt = null;
-                profile.currentStreamLastSeenAt = null;
+                profile.lastSeenAt = 0;
             });
-            saveToStorage();
         }
-        function trackParticipantActivity(name) {
-            const profile = ensureParticipantProfile(name);
-            if (!profile) return;
-            const now = Date.now();
-            const lastSeenAt = Number(profile.currentStreamLastSeenAt || profile.lastSeenAt || 0);
-            if (!profile.currentStreamFirstSeenAt) profile.currentStreamFirstSeenAt = now;
-            if (lastSeenAt && now > lastSeenAt) {
-                const delta = Math.min(now - lastSeenAt, PARTICIPANT_ACTIVITY_TIMEOUT_MS);
-                profile.currentStreamWatchMs = Number(profile.currentStreamWatchMs || 0) + delta;
-                profile.totalWatchMs = Number(profile.totalWatchMs || 0) + delta;
-            }
-            profile.currentStreamMessages = Number(profile.currentStreamMessages || 0) + 1;
-            profile.totalMessages = Number(profile.totalMessages || 0) + 1;
-            profile.currentStreamLastSeenAt = now;
-            profile.lastSeenAt = now;
-            saveParticipantProfilesDebounced();
-        }
-        function getApproxWatchMs(profile, scope = 'current') {
-            if (!profile) return 0;
-            const base = Number(scope === 'total' ? profile.totalWatchMs : profile.currentStreamWatchMs) || 0;
-            const lastSeenAt = Number(profile.currentStreamLastSeenAt || profile.lastSeenAt || 0);
-            if (!lastSeenAt) return base;
-            const liveTail = Math.min(Math.max(Date.now() - lastSeenAt, 0), PARTICIPANT_ACTIVITY_TIMEOUT_MS);
-            return base + liveTail;
-        }
-        function getParticipantStats(name) {
-            const profile = ensureParticipantProfile(name) || {};
-            const wins = globalHistory.filter(h => h.name.toLowerCase() === String(name).toLowerCase() && !h.isReroll).length;
-            return {
-                profile,
-                wins,
-                subscribed: isSubscribedToRostyasha1(name),
-                currentStreamMessages: Number(profile.currentStreamMessages || 0),
-                totalMessages: Number(profile.totalMessages || 0),
-                currentStreamWatchMs: getApproxWatchMs(profile, 'current'),
-                totalWatchMs: getApproxWatchMs(profile, 'total')
-            };
-        }
-        function formatDurationShort(ms) {
+        function formatWatchTime(ms) {
             const totalMinutes = Math.floor((Number(ms) || 0) / 60000);
             const hours = Math.floor(totalMinutes / 60);
             const minutes = totalMinutes % 60;
-            if (hours <= 0) return `${minutes}м`;
-            return `${hours}ч ${minutes}м`;
+            if (hours <= 0) return `${minutes} мин`;
+            return `${hours} ч ${minutes} мин`;
         }
-        function escapeAttr(value) {
-            return String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        function getParticipantActivityStats(name) {
+            const profile = ensureParticipantProfile(name) || {};
+            return {
+                currentStreamMessages: Number(profile.currentStreamMessages || 0),
+                totalMessages: Number(profile.totalMessages || 0),
+                currentStreamWatchMs: Number(profile.currentStreamWatchMs || 0),
+                totalWatchMs: Number(profile.totalWatchMs || 0)
+            };
         }
         function getSavedTelegram(name) {
             const key = getProfileKey(name);
@@ -1791,13 +1628,6 @@
             localStorage.setItem('bot_channel_name', currentChannelName);
             localStorage.setItem('bot_auth_settings', JSON.stringify(authSettings));
             // participants не сохраняем в localStorage, они идут из Firebase
-        }
-        function saveParticipantProfilesDebounced() {
-            if (participantProfilesSaveTimeout) clearTimeout(participantProfilesSaveTimeout);
-            participantProfilesSaveTimeout = setTimeout(() => {
-                saveToStorage();
-                participantProfilesSaveTimeout = null;
-            }, 1200);
         }
 
         // ===== Firebase app state sync (leaders + history) =====
@@ -2016,7 +1846,8 @@
         }
 
         function getActiveParticipants() {
-            return Array.from(participants).filter(participantMatchesFilters);
+            const onlyNeverWon = !!document.getElementById('never-won-global-checkbox')?.checked;
+            return Array.from(participants).filter(name => !onlyNeverWon || !hasParticipantWon(name));
         }
 
         function setCloudStatus(text, color) {
@@ -2073,21 +1904,12 @@
         function openAuthModal() {
             document.getElementById('auth-channel-input').value = authSettings.channel || currentChannelName || '';
             const loginInput = document.getElementById('auth-login-input');
-            const passwordInput = document.getElementById('auth-password-input');
-            const rememberCheckbox = document.getElementById('auth-save-credentials');
-            const showPassword = document.getElementById('auth-show-password');
-            if (loginInput) loginInput.value = authSettings.remember ? (authSettings.login || '') : '';
-            if (passwordInput) passwordInput.value = authSettings.remember ? (authSettings.password || '') : '';
-            if (rememberCheckbox) rememberCheckbox.checked = !!authSettings.remember;
-            if (showPassword) showPassword.checked = false;
-            toggleAuthPasswordVisibility();
+            const passInput = document.getElementById('auth-password-input');
+            const rememberInput = document.getElementById('auth-save-credentials');
+            if (loginInput) loginInput.value = authSettings.login || '';
+            if (passInput) passInput.value = authSettings.password || '';
+            if (rememberInput) rememberInput.checked = !!authSettings.remember;
             document.getElementById('auth-modal').style.display = 'flex';
-        }
-        function toggleAuthPasswordVisibility() {
-            const passwordInput = document.getElementById('auth-password-input');
-            const showPassword = document.getElementById('auth-show-password');
-            if (!passwordInput || !showPassword) return;
-            passwordInput.type = showPassword.checked ? 'text' : 'password';
         }
         function openAuthHelp() {
             alert('Ввод: укажите Twitch ник. Если такой аккаунт не зарегистрирован — введите пароль и нажмите ВОЙТИ/РЕГИСТРАЦИЯ чтобы создать локальный/облачный аккаунт. Пароли хранятся в зашифрованном виде (SHA-256 + salt).');
@@ -2142,8 +1964,8 @@
 
                 if (!userMessages[user]) userMessages[user] = [];
                 userMessages[user].push({ time, text: msg });
-                trackParticipantActivity(user);
-                if (participants.has(user)) updateFullParticipantsList();
+                recordParticipantActivity(user);
+                saveToStorage();
 
                 if (normalizedMessage === normalizedCodeword) {
                     addParticipantToFirebase(user);
@@ -2179,14 +2001,14 @@
             const channelValue = sanitizeChannelName(document.getElementById('auth-channel-input').value);
             const loginValue = String(document.getElementById('auth-login-input')?.value || '').trim();
             const passwordValue = String(document.getElementById('auth-password-input')?.value || '').trim();
-            const remember = !!document.getElementById('auth-save-credentials')?.checked;
+            const rememberCredentials = !!document.getElementById('auth-save-credentials')?.checked;
             if (!channelValue) {
                 alert('Введите название канала.');
                 return;
             }
             currentChannelName = channelValue;
-            authSettings = { channel: channelValue, login: remember ? loginValue : '', password: remember ? passwordValue : '', remember };
-            resetCurrentStreamMetrics();
+            authSettings = { channel: channelValue, login: rememberCredentials ? loginValue : '', password: rememberCredentials ? passwordValue : '', remember: rememberCredentials };
+            resetParticipantStreamActivity();
             if (sanitizeChannelName(channelValue) === '0savelka0') {
                 currentCodeword = '+';
                 const cd = document.getElementById('codeword-display'); if (cd) cd.innerText = currentCodeword;
@@ -2231,65 +2053,18 @@
         function hasParticipantWon(name) {
             return globalHistory.some(h => h.name.toLowerCase() === name.toLowerCase() && !h.isReroll);
         }
-        function participantMatchesFilters(name) {
-            const stats = getParticipantStats(name);
-            if (participantFilterState.subscription === 'sub' && !stats.subscribed) return false;
-            if (participantFilterState.subscription === 'not_sub' && stats.subscribed) return false;
-            if (participantFilterState.wins === 'won' && stats.wins < 1) return false;
-            if (participantFilterState.wins === 'never' && stats.wins > 0) return false;
-            if (participantFilterState.onlyNeverWon && stats.wins > 0) return false;
-            if (stats.currentStreamMessages < participantFilterState.minStreamMessages) return false;
-            if (stats.totalMessages < participantFilterState.minTotalMessages) return false;
-            if ((stats.currentStreamWatchMs / 60000) < participantFilterState.minStreamMinutes) return false;
-            if (participantFilterState.maxStreamMinutes !== null && (stats.currentStreamWatchMs / 60000) > participantFilterState.maxStreamMinutes) return false;
-            if ((stats.totalWatchMs / 3600000) < participantFilterState.minTotalHours) return false;
-            return true;
-        }
-        function readNumberInput(id, fallback = 0) {
-            const element = document.getElementById(id);
-            if (!element) return fallback;
-            const value = parseFloat(element.value);
-            return Number.isFinite(value) ? value : fallback;
-        }
-        function updateParticipantFilters() {
-            participantFilterState.subscription = document.getElementById('participant-sub-filter')?.value || 'all';
-            participantFilterState.wins = document.getElementById('participant-win-filter')?.value || 'all';
-            participantFilterState.minStreamMessages = readNumberInput('participant-min-stream-msgs', 0);
-            participantFilterState.minTotalMessages = readNumberInput('participant-min-total-msgs', 0);
-            participantFilterState.minStreamMinutes = readNumberInput('participant-min-stream-minutes', 0);
-            const maxMinutes = readNumberInput('participant-max-stream-minutes', NaN);
-            participantFilterState.maxStreamMinutes = Number.isFinite(maxMinutes) && maxMinutes > 0 ? maxMinutes : null;
-            participantFilterState.minTotalHours = readNumberInput('participant-min-total-hours', 0);
-            participantFilterState.onlyNeverWon = !!document.getElementById('participant-never-won-only')?.checked;
-            updateFullParticipantsList();
-        }
-        function clearParticipantFilters() {
-            ['participant-min-stream-msgs', 'participant-min-total-msgs', 'participant-max-stream-minutes', 'participant-min-stream-minutes', 'participant-min-total-hours'].forEach((id) => {
-                const element = document.getElementById(id);
-                if (element) element.value = '';
-            });
-            const subFilter = document.getElementById('participant-sub-filter');
-            const winFilter = document.getElementById('participant-win-filter');
-            const neverWon = document.getElementById('participant-never-won-only');
-            if (subFilter) subFilter.value = 'all';
-            if (winFilter) winFilter.value = 'all';
-            if (neverWon) neverWon.checked = false;
-            updateParticipantFilters();
-        }
         function updateFullParticipantsList() {
             const container = document.getElementById('full-participants-list');
             if (!container) return;
-            const arr = Array.from(participants).filter(participantMatchesFilters);
-            const summary = document.getElementById('participants-summary');
+            const onlyNeverWon = !!document.getElementById('never-won-global-checkbox')?.checked;
+            const arr = Array.from(participants).filter((u) => !onlyNeverWon || !hasParticipantWon(u));
             let html = '';
             arr.forEach((u, i) => {
-                const stats = getParticipantStats(u);
-                const winBadge = stats.wins > 0 ? `<span class="participant-badge is-won">Побеждал: ${stats.wins}</span>` : '<span class="participant-badge is-muted">Не побеждал</span>';
-                const subBadge = stats.subscribed ? '<span class="participant-badge is-success">Подписан</span>' : '<span class="participant-badge is-danger">Не подписан</span>';
-                html += `<div class="participant-row"><span class="participant-name"><span><span>${i+1}. <b>${u}</b></span><div class="participant-meta"><span class="participant-badge">Участвует</span>${winBadge}${subBadge}<span class="participant-stats">Стрим: ${stats.currentStreamMessages} сообщ. · ${formatDurationShort(stats.currentStreamWatchMs)}</span><span class="participant-stats">Всего: ${stats.totalMessages} сообщ. · ${formatDurationShort(stats.totalWatchMs)}</span></div></span></span><label><input type="checkbox" checked onchange="toggleParticipantActive('${escapeAttr(u)}', this.checked)"></label></div>`;
+                const isWinner = hasParticipantWon(u);
+                const winnerLabel = isWinner ? '<span style="color:#eab308; font-weight:800; margin-left:10px; text-shadow:0 0 10px rgba(234,179,8,0.8);">ПОБЕЖДАЛ</span>' : '';
+                html += `<div class="participant-row"><span class="participant-name"><span class="participant-badge">УЧАСТНИК</span><span>${i+1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" checked onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
             });
-            if (summary) summary.textContent = `Показано ${arr.length} из ${participants.size}`;
-            container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников под выбранные фильтры</div>';
+            container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
         }
         function initTwitchEmbed() {
             const frame = document.getElementById('twitch-chat-frame');
@@ -2443,7 +2218,6 @@
             globalHistory.push({ name: currentWinner, amount: historyAmount, deposit: historyDeposit, site: historySite, tg: historyTg, rerolls: rerollCount, date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() }); 
             rerollCount = 0; 
             renderLeaderboard(); 
-            updateFullParticipantsList();
             closeModals(); 
             cloudSaveAppStateDebounced(); // сохраняем топ и историю
         }
@@ -2528,9 +2302,9 @@
         function updateSubscriptionDisplay() {
             const statusDiv = document.getElementById('win-sub-status');
             const textSpan = document.getElementById('win-sub-text');
-            const channelSpan = document.getElementById('win-sub-channel');
+            const labelSpan = statusDiv ? statusDiv.querySelector('span') : null;
             if (!statusDiv || !textSpan || !currentWinner) return;
-            if (channelSpan) channelSpan.innerText = (currentChannelName || 'канал').toUpperCase();
+            if (labelSpan) labelSpan.innerText = `ПОДПИСКА НА ${String(currentChannelName || 'TWITCH').toUpperCase()}: `;
             const isSub = isSubscribedToRostyasha1(currentWinner);
             if (isSub) {
                 textSpan.innerText = 'ЕСТЬ';
@@ -2542,6 +2316,11 @@
                 textSpan.style.color = '#ef4444';
                 statusDiv.style.background = 'rgba(239,68,68,0.1)';
                 statusDiv.style.borderColor = 'rgba(239,68,68,0.3)';
+            }
+            const statusLabel = statusDiv.querySelector('span');
+            if (statusLabel) {
+                statusLabel.textContent = `ПОДПИСКА НА ${String(currentChannelName || 'TWITCH').toUpperCase()}: `;
+                statusDiv.prepend(statusLabel);
             }
         }
         function showWinnerRef(name) {
@@ -2572,6 +2351,11 @@
             document.getElementById('win-count-stat').innerText = userHistory.length;
             document.getElementById('win-sum-stat').innerText = totalWon.toLocaleString() + ' ₽';
             document.getElementById('win-dep-stat').innerText = totalDep.toLocaleString() + ' ₽';
+            const activityStats = getParticipantActivityStats(name);
+            const currentStreamStatsEl = document.getElementById('win-current-stream-stats');
+            const totalStreamStatsEl = document.getElementById('win-total-stream-stats');
+            if (currentStreamStatsEl) currentStreamStatsEl.innerText = `${activityStats.currentStreamMessages} сообщ. • ${formatWatchTime(activityStats.currentStreamWatchMs)}`;
+            if (totalStreamStatsEl) totalStreamStatsEl.innerText = `${activityStats.totalMessages} сообщ. • ${formatWatchTime(activityStats.totalWatchMs)}`;
             const rerollDisplay = document.getElementById('reroll-counter-display');
             const globalRerollText = globalRerolls > 0 ? ` | Реролов всего (Global): ${globalRerolls}` : '';
             rerollDisplay.innerText = 'Рероллов: ' + rerollCount + globalRerollText;
@@ -2970,17 +2754,22 @@
         document.getElementById('auth-password-input').addEventListener('keydown', (event) => {
             if (event.key === 'Enter') applyAuthSettings();
         });
+        const neverWonToggle = document.getElementById('never-won-global-checkbox');
+        if (neverWonToggle) {
+            neverWonToggle.addEventListener('change', () => {
+                updateFullParticipantsList();
+                if (!isWheelSpinning) wheelParticipants = getActiveParticipants();
+            });
+        }
         setTimeout(initAdminLoginListeners, 0);
         initCloudProfiles();
         try { loadSiteOptionsFromCloud(); subscribeSiteOptionsFromCloud(); } catch(e) { try { renderSiteSelects(); renderSiteOptionsList(); } catch(_) {} }
-        renderLeaderboard();
         document.getElementById('auth-channel-input').value = authSettings.channel || currentChannelName || '';
-        document.getElementById('auth-login-input').value = authSettings.remember ? (authSettings.login || '') : '';
-        document.getElementById('auth-password-input').value = authSettings.remember ? (authSettings.password || '') : '';
-        document.getElementById('auth-save-credentials').checked = !!authSettings.remember;
-        document.getElementById('auth-show-password').checked = false;
-        toggleAuthPasswordVisibility();
-        updateParticipantFilters();
+        if (document.getElementById('auth-login-input')) document.getElementById('auth-login-input').value = authSettings.login || '';
+        if (document.getElementById('auth-password-input')) document.getElementById('auth-password-input').value = authSettings.password || '';
+        if (document.getElementById('auth-save-credentials')) document.getElementById('auth-save-credentials').checked = !!authSettings.remember;
+        renderLeaderboard();
+        updateFullParticipantsList();
         // load wheel participants from localStorage (if any)
         try { wheelParticipants = JSON.parse(localStorage.getItem('bot_wheel_participants') || '[]'); } catch(e) { wheelParticipants = []; }
         setImportFormat('csv');
