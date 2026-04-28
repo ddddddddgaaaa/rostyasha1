@@ -1203,9 +1203,9 @@
                         <div class="sound-option">
                             <span class="sound-name">🎺 Фанфары</span>
                             <button class="sound-play-btn" onclick="playSoundPreview('fanfare')">▶ PLAY</button>
-         </div>
-     </div>
-
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="panel panel-with-bg" style="padding: 15px;">
@@ -1225,8 +1225,8 @@
             </div>
         </div>
         <div class="panel panel-with-bg">
-            <h3 style="margin:0 0 15px 0; color: var(--accent-neon-blue); text-shadow: none;">ПОСЛЕДНИЕ 10 ВЫИГРЫВАВШИХ</h3>
-            <div id="leaderboard" style="overflow-y:auto; flex-grow:1; max-height: calc(10 * 48px);"></div>
+            <h3 style="margin:0 0 15px 0; color: var(--accent-neon-blue); text-shadow: none;">ТОП (ВЫВОДЫ)</h3>
+            <div id="leaderboard" style="overflow-y:auto; flex-grow: 1;"></div>
             <div onclick="openAdminLogin()" style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:160px; height:22px; cursor:default; z-index:10000; background:transparent; border:none; outline:none;"></div>
         </div>
     </div>
@@ -1331,10 +1331,6 @@
             <button class="btn-main btn-purple" onclick="reSpinToHome()">ПЕРЕКРУТИТЬ</button>
         </div>
     </div>
-    <div class="win-card" style="padding: 20px; border-radius: 20px; display: flex; flex-direction: column; margin-top: 20px; max-height: 300px;">
-        <h4 style="margin-top:0; color: var(--accent-neon-blue);">Сообщения за последние 12 часов</h4>
-        <div id="win-recent-chat" style="overflow-y:auto; flex-grow:1;"></div>
-    </div>
     </div>
     </div>
 
@@ -1357,7 +1353,6 @@
         let globalHistory = JSON.parse(localStorage.getItem('bot_global_history')) || [];
         let participantProfiles = JSON.parse(localStorage.getItem('bot_participant_profiles')) || {};
         let participants = new Set(); // активные участники (те, кто в розыгрыше)
-        let recentMessages = JSON.parse(localStorage.getItem('bot_recent_messages')) || [];
         let userMessages = {};
         let timerSeconds = 600, timerRunning = false, winTimerActive = false;
         let currentWinner = null, selectedSpinMode = 'normal';
@@ -1371,16 +1366,7 @@
         let isWheelSpinning = false; // флаг блокировки обновления wheelParticipants во время крута
         let pendingParticipants = JSON.parse(localStorage.getItem('bot_pending_participants') || '[]'); // участники, которые написали кодовое пока рулетка открыта
         let sessionWinners = new Set(); // участники, которые выиграли в текущей сессии
-         const wheelColors = ['#0f172a','#1e2937','#334155','#475569','#64748b','#1e3a8a','#312e81','#4338ca','#4c1d95','#6b21a8'];
-         
-         // Prune old recent messages on startup (older than 12h)
-         (function pruneRecentOnStart() {
-             if (!recentMessages || !recentMessages.length) return;
-             const now = Date.now();
-             const cutoff = now - 12 * 60 * 60 * 1000;
-             recentMessages = recentMessages.filter(m => m.timestamp >= cutoff);
-             try { localStorage.setItem('bot_recent_messages', JSON.stringify(recentMessages)); } catch(e) {}
-         })();
+        const wheelColors = ['#0f172a','#1e2937','#334155','#475569','#64748b','#1e3a8a','#312e81','#4338ca','#4c1d95','#6b21a8'];
         
         // Color coding based on sum ranges
         function getColorForSum(sum) {
@@ -1859,7 +1845,6 @@
             localStorage.setItem('bot_channel_name', currentChannelName);
             localStorage.setItem('bot_auth_password_mask', authPasswordMask);
             localStorage.setItem('bot_participant_filters', JSON.stringify(participantFilters));
-            localStorage.setItem('bot_recent_messages', JSON.stringify(recentMessages));
             // participants не сохраняем в localStorage, они идут из Firebase
         }
 
@@ -1877,7 +1862,6 @@
                     leaders: leaders || [],
                     globalHistory: globalHistory || [],
                     participantProfiles: participantProfiles || {},
-                    recentMessages: recentMessages || [],
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 };
                 const docId = getAppDocId();
@@ -1907,17 +1891,11 @@
                 const data = doc.data() || {};
                 console.log('loadAppStateFromCloud: data=', docId, data);
                 try { setCloudStatus('loaded', 'green'); } catch(e){}
-                 if (Array.isArray(data.leaders) && data.leaders.length) leaders = data.leaders;
-                 if (Array.isArray(data.globalHistory) && data.globalHistory.length) globalHistory = data.globalHistory;
-                 if (data.participantProfiles) participantProfiles = Object.assign({}, participantProfiles, data.participantProfiles);
-                 if (Array.isArray(data.recentMessages)) {
-                     recentMessages = data.recentMessages;
-                     // Prune old messages on load
-                     const now = Date.now();
-                     recentMessages = recentMessages.filter(m => now - m.timestamp < 12 * 60 * 60 * 1000);
-                 }
-                 saveToStorage();
-                 renderLeaderboard();
+                if (Array.isArray(data.leaders) && data.leaders.length) leaders = data.leaders;
+                if (Array.isArray(data.globalHistory) && data.globalHistory.length) globalHistory = data.globalHistory;
+                if (data.participantProfiles) participantProfiles = Object.assign({}, participantProfiles, data.participantProfiles);
+                saveToStorage();
+                renderLeaderboard();
             } catch (e) {
                 console.error('loadAppStateFromCloud error:', e);
                 try { setCloudStatus('load error', 'red'); } catch(err){}
@@ -1946,15 +1924,6 @@
                         saveToStorage();
                     }
                     if (data.participantProfiles) participantProfiles = Object.assign({}, participantProfiles, data.participantProfiles);
-                    if (Array.isArray(data.recentMessages)) {
-                        recentMessages = data.recentMessages;
-                        const now = Date.now();
-                        recentMessages = recentMessages.filter(m => now - m.timestamp < 12 * 60 * 60 * 1000);
-                        // If winner screen is open, refresh recent chat
-                        if (document.getElementById('winner-screen') && document.getElementById('winner-screen').style.display === 'flex') {
-                            renderRecentChat();
-                        }
-                    }
                 });
                 try { loadAccountsFromCloud(); } catch(e){}
                 if (sanitizeChannelName(currentChannelName) === '0savelka0') {
@@ -2203,11 +2172,7 @@
                     const parts = data.split(' ');
                     const rawTags = parts[0];
                     if (rawTags.includes('badges=')) {
-                        // Get all badges, not just the first one (subscriber may not be first)
-                        const badgesMatch = rawTags.match(/badges=([^;]+)/);
-                        if (badgesMatch) {
-                            badgeStr = badgesMatch[1];
-                        }
+                        badgeStr = rawTags.split('badges=')[1].split(';')[0];
                     }
                     user = parts[1].split('!')[0].substring(1);
                     msg = data.split(messageMarker)[1].trim();
@@ -2222,25 +2187,11 @@
                 const normalizedCodeword = currentCodeword.trim().toLowerCase();
                 const time = new Date().toLocaleTimeString();
 
-                 if (!userMessages[user]) userMessages[user] = [];
-                 userMessages[user].push({ time, text: msg });
-                 recordParticipantActivity(user);
+                if (!userMessages[user]) userMessages[user] = [];
+                userMessages[user].push({ time, text: msg });
+                recordParticipantActivity(user);
 
-                 // Add to recent messages (last 12 hours)
-                 const msgTimestamp = Date.now();
-                 recentMessages.push({ user, text: msg, time: new Date().toLocaleTimeString(), timestamp: msgTimestamp });
-                 // Prune messages older than 12 hours
-                 const twelveHoursAgo = msgTimestamp - 12 * 60 * 60 * 1000;
-                 recentMessages = recentMessages.filter(m => m.timestamp >= twelveHoursAgo);
-                 // Save and sync
-                 saveToStorage();
-                 cloudSaveAppStateDebounced();
-                 // Update recent chat panel if winner screen is open
-                 if (document.getElementById('winner-screen') && document.getElementById('winner-screen').style.display === 'flex') {
-                     renderRecentChat();
-                 }
-
-                 if (normalizedMessage === normalizedCodeword) {
+                if (normalizedMessage === normalizedCodeword) {
                     addParticipantToFirebase(user);
                 }
 
@@ -2319,21 +2270,11 @@
         }
         function renderLeaderboard() {
             recalculateLeadersFromHistory();
-            // Sort by amount descending for display order
             leaders.sort((a,b) => b.amount - a.amount);
             const container = document.getElementById('leaderboard');
             container.innerHTML = '';
-            // Take only last 10 winners (most recent by chronological order from history)
-            // We need to get the 10 most recent unique winners from globalHistory
-            const recentWinners = [];
-            for (let i = globalHistory.length - 1; i >= 0 && recentWinners.length < 10; i--) {
-                const h = globalHistory[i];
-                if (!h.isReroll && h.name && !recentWinners.includes(h.name)) {
-                    recentWinners.push(h.name);
-                }
-            }
-            recentWinners.forEach((name, idx) => {
-                container.innerHTML += `<div class="leader-item" style="cursor:pointer;" onclick="openLeaderEdit(${leaders.findIndex(l => l.name === name)})"><div class="leader-row" style="display:flex; justify-content:space-between; align-items:center;"><span><b>${idx+1}.</b> ${name}</span></div></div>`;
+            leaders.forEach((item, i) => {
+                container.innerHTML += `<div class="leader-item" style="cursor:pointer;" onclick="openLeaderEdit(${i})"><div class="leader-row" style="display:flex; justify-content:space-between; align-items:center;"><span><b>${i+1}.</b> ${item.name}</span><div><b style="color:var(--accent-neon-blue);">${item.amount.toLocaleString()} ₽</b></div></div></div>`;
             });
             saveToStorage();
         }
@@ -2366,16 +2307,13 @@
             arr.forEach((u, i) => {
                 const winCount = hasParticipantWon(u);
                 const isWinner = winCount > 0;
-                const globalRerolls = globalHistory.filter(h => h.name.toLowerCase() === u.toLowerCase() && h.isReroll).length;
                 // Yellow label with count
                 const winnerLabel = isWinner ? `<span style="color:#eab308; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(234,179,8,0.8);">ВЫИГРЫВАЛ ${winCount}</span>` : '';
-                // Red label for rerolls
-                const rerollLabel = globalRerolls > 0 ? `<span style="color:#ef4444; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(239,68,68,0.8);">РЕРОЛЬНУТ</span>` : '';
                 
                 // Determine if inactive based on filter
                 const isInactive = neverWonOnly && isWinner;
                 
-                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}${rerollLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
+                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
         }
@@ -2637,7 +2575,6 @@
                 saveToStorage(); 
                 openStats(); 
                 renderLeaderboard();
-                updateFullParticipantsList(); // Refresh reroll labels
             } 
         }
         function openHistory() {
@@ -2662,7 +2599,7 @@
         function editHistoryItem(index) { let h = globalHistory[index]; let name = prompt('Игрок:', h.name); let tg = prompt('Telegram:', h.tg || getSavedTelegram(h.name) || ''); let site = prompt('Проект:', h.site); let amount = prompt('Вывод (₽):', h.amount); let deposit = prompt('Депозит (₽):', h.deposit); let date = prompt('Дата и время:', h.date); if (name !== null) { h.name = name; h.tg = tg; h.site = site; h.amount = parseFloat(amount) || 0; h.deposit = parseFloat(deposit) || 0; h.date = date; saveParticipantTelegram(h.name, tg); syncParticipantTelegramToCloud(h.name, tg); saveToStorage(); openHistory(); renderLeaderboard(); } }
         function deleteHistoryItem(index) { 
             if(confirm('Удалить эту запись из истории?')) { 
-                const deletedItem = globalHistory[index]; 
+                const deletedItem = globalHistory[index];
                 globalHistory.splice(index, 1); 
                 // Если это была последняя запись для этого игрока, удаляем его из топа
                 const remainingForPlayer = globalHistory.filter(h => h.name.toLowerCase() === deletedItem.name.toLowerCase());
@@ -2672,7 +2609,6 @@
                 saveToStorage(); 
                 openHistory(); 
                 renderLeaderboard();
-                updateFullParticipantsList(); // Refresh reroll labels
             } 
         }
         function editWinnerCounter(type) { if (!currentWinner) return; let val = prompt('Введите новое значение:'); if (val !== null) { if (type === 'count') document.getElementById('win-count-stat').innerText = val; if (type === 'sum') document.getElementById('win-sum-stat').innerText = parseInt(val).toLocaleString() + ' ₽'; if (type === 'dep') document.getElementById('win-dep-stat').innerText = parseInt(val).toLocaleString() + ' ₽'; } }
@@ -2705,8 +2641,7 @@
         // ===== AUTO SUBSCRIPTION STATUS FROM TWITCH BADGES =====
         function isSubscribedToCurrentChannel(name) {
             const badges = userRolesCache[name.toLowerCase()] || '';
-            // Check for subscriber or founder badge (both indicate subscription)
-            return badges.includes('subscriber') || badges.includes('founder');
+            return badges.includes('subscriber');
         }
         function updateSubscriptionDisplay() {
             const statusDiv = document.getElementById('win-sub-status');
@@ -2731,17 +2666,8 @@
                 statusDiv.style.background = 'rgba(245,158,11,0.1)';
                 statusDiv.style.borderColor = 'rgba(245,158,11,0.3)';
             }
-         }
-         function renderRecentChat() {
-             const container = document.getElementById('win-recent-chat');
-             if (!container) return;
-             // Show recent messages (last 12h) in reverse chronological order (newest first)
-             const messages = recentMessages.slice().reverse();
-             container.innerHTML = messages.map(m => 
-                 `<div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:12px; display:flex; gap:8px;"><span style="color:var(--accent-neon-blue); font-weight:700;">${escapeHtml(m.user)}:</span><span style="color:#e2e8f0;">${escapeHtml(m.text)}</span><span style="color:#666; font-size:11px; margin-left:auto;">${m.time}</span></div>`
-             ).join('');
-         }
-         function showWinnerRef(name) {
+        }
+        function showWinnerRef(name) {
             closeModals();
             currentWinner = name;
             winTimerActive = true;
@@ -2779,11 +2705,10 @@
             document.getElementById('win-deposit-input').value = '';
             document.getElementById('win-tg-input').value = savedTg;
             const winSite = document.getElementById('win-site-select'); if (winSite) winSite.value = '---';
-             document.getElementById('winner-screen').style.display = 'flex';
-             const hCont = document.getElementById('win-chat-history');
-             hCont.innerHTML = (userMessages[name] || []).map(m => `<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size:12px;"><small style="color:#555;">${m.time}</small> ${m.text}</div>`).reverse().join('');
-             renderRecentChat();
-             let s = 0;
+            document.getElementById('winner-screen').style.display = 'flex';
+            const hCont = document.getElementById('win-chat-history');
+            hCont.innerHTML = (userMessages[name] || []).map(m => `<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size:12px;"><small style="color:#555;">${m.time}</small> ${m.text}</div>`).reverse().join('');
+            let s = 0;
             clearInterval(window.winInt);
             window.winInt = setInterval(() => { if (winTimerActive) { s++; let sec = s%60, min = Math.floor(s/60), hr = Math.floor(min/60); document.getElementById('win-timer-label').innerText = `${hr.toString().padStart(2,'0')}:${(min%60).toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; } }, 1000);
         }
@@ -2828,7 +2753,6 @@
                 syncRerollToCloud(currentWinner, rerollCount);
                 saveToStorage();
             }
-            updateFullParticipantsList(); // Refresh to show РЕРОЛЬНУТ label
             const arr = getActiveParticipants();
             if (arr.length === 0) {
                 closeModals();
@@ -3237,7 +3161,6 @@
                 syncRerollToCloud(currentWinner, rerollCount);
                 saveToStorage();
             }
-            updateFullParticipantsList(); // Refresh to show РЕРОЛЬНУТ label
             const pool = getEligibleParticipants();
             if (!pool.length) {
                 closeModals();
@@ -4251,4 +4174,3 @@
 
 </body>
 </html>
-
