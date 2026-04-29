@@ -1225,8 +1225,8 @@
             </div>
         </div>
         <div class="panel panel-with-bg">
-            <h3 style="margin:0 0 15px 0; color: var(--accent-neon-blue); text-shadow: none;">ТОП (ВЫВОДЫ)</h3>
-            <div id="leaderboard" style="overflow-y:auto; flex-grow: 1;"></div>
+            <h3 style="margin:0 0 15px 0; color: var(--accent-neon-blue); text-shadow: none;">ПОСЛЕДНИЕ 10 ВЫИГРЫВАВШИХ</h3>
+            <div id="leaderboard" style="overflow-y:auto; flex-grow: 1; max-height: 350px;"></div>
             <div onclick="openAdminLogin()" style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:160px; height:22px; cursor:default; z-index:10000; background:transparent; border:none; outline:none;"></div>
         </div>
     </div>
@@ -2274,7 +2274,7 @@
             const container = document.getElementById('leaderboard');
             container.innerHTML = '';
             leaders.forEach((item, i) => {
-                container.innerHTML += `<div class="leader-item" style="cursor:pointer;" onclick="openLeaderEdit(${i})"><div class="leader-row" style="display:flex; justify-content:space-between; align-items:center;"><span><b>${i+1}.</b> ${item.name}</span><div><b style="color:var(--accent-neon-blue);">${item.amount.toLocaleString()} ₽</b></div></div></div>`;
+                container.innerHTML += `<div class="leader-item" style="cursor:pointer;" onclick="openLeaderEdit(${i})"><div class="leader-row" style="display:flex; justify-content:space-between; align-items:center;"><span><b>${i+1}.</b> ${item.name}</span><div><b style="color:var(--accent-neon-blue);"></b></div></div></div>`;
             });
             saveToStorage();
         }
@@ -2308,12 +2308,16 @@
                 const winCount = hasParticipantWon(u);
                 const isWinner = winCount > 0;
                 // Yellow label with count
-                const winnerLabel = isWinner ? `<span style="color:#eab308; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(234,179,8,0.8);">ВЫИГРЫВАЛ ${winCount}</span>` : '';
+                const winnerLabel = isWinner ? `<span class="participant-win-tag">ВЫИГРЫВАЛ ${winCount}</span>` : '';
+                
+                // Check if participant was rerolled (in global history as reroll)
+                const rerollCount = globalHistory.filter(h => h.name.toLowerCase() === u.toLowerCase() && h.isReroll).length;
+                const rerollLabel = rerollCount > 0 ? `<span style="color:#ef4444; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(239,68,68,0.8);">РЕРОЛЬНУТ ${rerollCount}</span>` : '';
                 
                 // Determine if inactive based on filter
                 const isInactive = neverWonOnly && isWinner;
                 
-                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
+                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}${rerollLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
         }
@@ -2450,10 +2454,14 @@
                 // Yellow label with count
                 const winnerLabel = isWinner ? `<span class="participant-win-tag">ВЫИГРЫВАЛ ${winCount}</span>` : '';
                 
+                // Check if participant was rerolled (in global history as reroll)
+                const rerollCount = globalHistory.filter(h => h.name.toLowerCase() === u.toLowerCase() && h.isReroll).length;
+                const rerollLabel = rerollCount > 0 ? `<span style="color:#ef4444; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(239,68,68,0.8);">РЕРОЛЬНУТ ${rerollCount}</span>` : '';
+                
                 // Determine if inactive based on filter
                 const isInactive = neverWonOnly && isWinner;
                 
-                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
+                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}${rerollLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
         }
@@ -2697,7 +2705,7 @@
             document.getElementById('win-sum-stat').innerText = totalWon.toLocaleString() + ' ₽';
             document.getElementById('win-dep-stat').innerText = totalDep.toLocaleString() + ' ₽';
             const rerollDisplay = document.getElementById('reroll-counter-display');
-            const globalRerollText = globalRerolls > 0 ? ` | Реролов всего (Global): ${globalRerolls}` : '';
+            const globalRerollText = globalRerolls > 0 ? ` | Рероллов всего (Global): ${globalRerolls}` : '';
             rerollDisplay.innerText = 'Рероллов: ' + rerollCount + globalRerollText;
             updateWinnerHistoryLimit(winnerHistoryLimit);
             renderWinnerHistory(name);
