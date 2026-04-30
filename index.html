@@ -3048,7 +3048,13 @@
             }
             requestAnimationFrame(animate);
         }
-        function instantRoll() { const arr = getActiveParticipants(); if (arr.length < 1) return alert('Нет участников!'); let win = pickRiggedWinner(arr); showWinnerRef(win); }
+        function instantRoll() {
+            const arr = getActiveParticipants();
+            if (arr.length < 1) return alert('Нет участников!');
+            const winnerIndex = Math.floor(Math.random() * arr.length);
+            const winner = arr[winnerIndex];
+            showWinnerRef(winner);
+        }
         function closeDepRouletteOnly() {
             // Закрываем только рулетку депов
             document.getElementById('dep-roulette-modal').style.display = 'none';
