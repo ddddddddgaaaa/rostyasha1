@@ -2745,7 +2745,7 @@
         function openWheel() {
             // Если в рулетке уже есть импортированные участники, не перезаписываем их
             if (!Array.isArray(wheelParticipants) || wheelParticipants.length === 0) {
-                wheelParticipants = getActiveParticipants();
+                wheelParticipants = getEligibleParticipants();
             }
             const wheelModal = document.getElementById('wheel-modal');
             wheelModal.style.display = 'flex';
@@ -2754,7 +2754,7 @@
             if (autos) autos.checked = !!autoSpinEnabled;
             document.getElementById('elim-log').innerText = '';
             currentRotation = 0;
-            setSpinMode('elimination');
+            setSpinMode(selectedSpinMode || 'elimination');
             drawWheel(0);
         }
         function reSpinToHome() {
@@ -2809,7 +2809,7 @@
             } else {
                 document.getElementById('mode-normal').classList.add('is-active-mode');
             }
-            wheelParticipants = (Array.isArray(wheelParticipants) && wheelParticipants.length) ? wheelParticipants : getActiveParticipants();
+            wheelParticipants = (Array.isArray(wheelParticipants) && wheelParticipants.length) ? wheelParticipants : getEligibleParticipants();
             document.getElementById('elim-log').innerText = '';
             currentRotation = 0;
             drawWheel(0);
@@ -3049,6 +3049,7 @@
                                 startSpin(selectedSpinMode);
                             }, 900);
                         } else {
+                            document.getElementById('elim-log').innerText = 'ПОБЕДИТЕЛЬ: ' + winner;
                             showWinnerRef(winner);
                             document.getElementById('roll-button').disabled = false;
                         }
