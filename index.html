@@ -2815,7 +2815,19 @@
             drawWheel(0);
         }
 
-        function executeSpin() { if (wheelParticipants.length === 0) return; document.getElementById('roll-button').disabled = true; startSpin(selectedSpinMode); }
+        function executeSpin() {
+            if (isWheelSpinning) return;
+            if (!Array.isArray(wheelParticipants) || wheelParticipants.length === 0) {
+                wheelParticipants = getEligibleParticipants();
+            }
+            if (!wheelParticipants.length) {
+                alert('Нет участников для рулетки!');
+                return;
+            }
+            const rollButton = document.getElementById('roll-button');
+            if (rollButton) rollButton.disabled = true;
+            startSpin(selectedSpinMode);
+        }
 
         function getParticipantUnderArrow(angle) {
             const p = wheelParticipants || [];
@@ -2968,9 +2980,24 @@
         }
 
         function startSpin(mode) {
-            const duration = parseInt(document.getElementById('dur-input').value) * 1000;
+            const durationInput = document.getElementById('dur-input');
+            const durationSeconds = Math.max(1, parseInt(durationInput?.value, 10) || 5);
+            if (durationInput) durationInput.value = String(durationSeconds);
+            const duration = durationSeconds * 1000;
             const n = wheelParticipants.length;
-            if (n === 0) return;
+            if (n === 0) {
+                isWheelSpinning = false;
+                const rollButton = document.getElementById('roll-button');
+                if (rollButton) rollButton.disabled = false;
+                return;
+            }
+            if (mode === 'elimination' && n === 1) {
+                isWheelSpinning = false;
+                showWinnerRef(wheelParticipants[0]);
+                const rollButton = document.getElementById('roll-button');
+                if (rollButton) rollButton.disabled = false;
+                return;
+            }
             
             // Блокируем обновление wheelParticipants извне на время крута
             isWheelSpinning = true;
@@ -2989,9 +3016,13 @@
 
             const fullSpins = Math.PI * 2 * (6 + Math.floor(Math.random() * 4));
             const jitter = (Math.random() - 0.5) * sliceAngle * 0.3;
-            const endAngle = -Math.PI / 2 - (winnerIdx * sliceAngle + sliceAngle / 2) - fullSpins + jitter;
-
-            const startAngle = 0;
+            const targetAngle = -Math.PI / 2 - (winnerIdx * sliceAngle + sliceAngle / 2) + jitter;
+            const startAngle = Number.isFinite(currentRotation) ? currentRotation : 0;
+            const normalizedStartAngle = ((startAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+            const normalizedTargetAngle = ((targetAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+            let delta = normalizedTargetAngle - normalizedStartAngle;
+            if (delta > 0) delta -= Math.PI * 2;
+            const endAngle = startAngle + delta - fullSpins;
             let startTimestamp = null;
 
             function animate(timestamp) {
@@ -3004,6 +3035,7 @@
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
+                    currentRotation = endAngle;
                     drawWheel(endAngle);
                     // Разблокируем обновление wheelParticipants после завершения крута
                     isWheelSpinning = false;
@@ -3029,12 +3061,14 @@
                             document.getElementById('roll-button').disabled = false;
                         } else if (wheelParticipants.length === 1) {
                             setTimeout(() => {
+                                currentRotation = 0;
                                 drawWheel(0);
                                 showWinnerRef(wheelParticipants[0]);
                                 document.getElementById('roll-button').disabled = false;
                             }, 1500);
                         } else {
                             setTimeout(() => {
+                                currentRotation = 0;
                                 drawWheel(0);
                                 if (autoSpinEnabled) {
                                     startSpin('elimination');
@@ -3167,8 +3201,8 @@
         instantRoll = function() {
             const arr = getEligibleParticipants();
             if (arr.length < 1) return alert('Нет участников, подходящих под фильтр!');
-            const win = pickRiggedWinner(arr);
-            showWinnerRef(win);
+            const winnerIndex = Math.floor(Math.random() * arr.length);
+            showWinnerRef(arr[winnerIndex]);
         };
 
         reSpinToHome = function() {
