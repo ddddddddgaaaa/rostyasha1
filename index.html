@@ -521,22 +521,6 @@
             text-transform: uppercase;
             white-space: nowrap;
         }
-        .participant-reroll-tag {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            margin-left: 8px;
-            padding: 3px 9px;
-            border-radius: 999px;
-            color: #fee2e2;
-            background: rgba(239, 68, 68, 0.18);
-            border: 1px solid rgba(239, 68, 68, 0.55);
-            font-size: 10px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
         .participant-row label {
             display: inline-flex;
             align-items: center;
@@ -2661,15 +2645,11 @@
                 const isWinner = winCount > 0;
                 // Yellow label with count
                 const winnerLabel = isWinner ? `<span class="participant-win-tag">ВЫИГРЫВАЛ ${winCount}</span>` : '';
-                
-                // Check if participant was rerolled
-                const wasRerolled = globalHistory.some(h => h.name.toLowerCase() === u.toLowerCase() && h.isReroll);
-                const rerollLabel = wasRerolled ? `<span class="participant-reroll-tag">РЕРОЛЬНУТ</span>` : '';
-                
+
                 // Determine if inactive based on filter
                 const isInactive = neverWonOnly && isWinner;
                 
-                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}${rerollLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
+                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
         };
