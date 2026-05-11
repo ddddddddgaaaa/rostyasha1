@@ -683,6 +683,46 @@
             border: 1px solid rgba(255, 20, 147, 0.18);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
         }
+        .nick-search-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+        }
+        .nick-search-modal.show {
+            display: flex;
+        }
+        .nick-search-modal-content {
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(255, 20, 147, 0.35);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
+            position: relative;
+        }
+        .nick-search-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            color: var(--accent-neon-blue);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .nick-search-modal-close:hover {
+            transform: scale(1.2);
+        }
         .nick-search-card h4 {
             margin: 0 0 8px;
             color: var(--accent-neon-blue);
@@ -1279,69 +1319,7 @@
             <button class="btn-main btn-purple" onclick="instantRoll()">БЫСТРЫЙ РОЛЛ</button>
             <button class="btn-main" onclick="openStats()">АНАЛИТИКА ПРОЕКТОВ</button>
             <button class="btn-main" onclick="openHistory()">ИСТОРИЯ ВЫПАДЕНИЙ</button>
-            <div class="nick-search-card">
-                <h4>Поиск Ника</h4>
-                <p class="nick-search-copy">Найди игрока и быстро поправь его статистику: реролы, выводы, депы и сайт.</p>
-                <div class="nick-search-row">
-                    <input id="nick-search-input" type="text" placeholder="Введите ник" onkeydown="if(event.key === 'Enter'){ searchNickStats(); }">
-                    <button class="btn-main nick-search-btn" onclick="searchNickStats()">Найти</button>
-                </div>
-                <div id="nick-search-status" class="nick-search-status"></div>
-                <div id="nick-search-result" class="nick-search-result">
-                    <input id="nick-editor-source" type="hidden">
-                    <div class="nick-search-meta">
-                        <div class="nick-search-pill">
-                            <strong id="nick-found-name">---</strong>
-                            <span>Найденный игрок</span>
-                        </div>
-                        <div class="nick-search-pill">
-                            <strong id="nick-found-records">0</strong>
-                            <span>Записей в истории</span>
-                        </div>
-                        <div class="nick-search-pill">
-                            <strong id="nick-found-wins">0</strong>
-                            <span>Побед / выводов</span>
-                        </div>
-                        <div class="nick-search-pill">
-                            <strong id="nick-found-rerolls">0</strong>
-                            <span>Реролов</span>
-                        </div>
-                    </div>
-                    <div class="nick-edit-grid">
-                        <div class="nick-edit-field full">
-                            <label for="nick-edit-name">Никнейм</label>
-                            <input id="nick-edit-name" type="text" placeholder="Никнейм">
-                        </div>
-                        <div class="nick-edit-field full">
-                            <label for="nick-edit-tg">Telegram</label>
-                            <input id="nick-edit-tg" type="text" placeholder="@username">
-                        </div>
-                        <div class="nick-edit-field">
-                            <label for="nick-edit-amount">Выводы (₽)</label>
-                            <input id="nick-edit-amount" type="number" placeholder="0">
-                        </div>
-                        <div class="nick-edit-field">
-                            <label for="nick-edit-deposit">Депозиты (₽)</label>
-                            <input id="nick-edit-deposit" type="number" placeholder="0">
-                        </div>
-                        <div class="nick-edit-field">
-                            <label for="nick-edit-rerolls">Реролы</label>
-                            <input id="nick-edit-rerolls" type="number" min="0" placeholder="0">
-                        </div>
-                        <div class="nick-edit-field">
-                            <label for="nick-edit-site">Сайт</label>
-                            <select id="nick-edit-site">
-                                <option value="---">---</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="nick-search-actions">
-                        <button class="btn-main" onclick="applyNickStatsEdit()">Сохранить</button>
-                        <button class="btn-main btn-purple" onclick="clearNickSearch()">Очистить</button>
-                    </div>
-                    <div class="nick-search-note">Суммы меняются через корректировку в истории, а ник, Telegram, реролы и сайт обновляются сразу во всех его записях.</div>
-                </div>
-            </div>
+            <button class="btn-main" onclick="openNickSearchModal()">🔍 ПОИСК НИКА</button>
             <div class="filter-card">
                 <label class="filter-toggle" style="margin-bottom:0;">
                     <input id="filter-never-won-checkbox" type="checkbox">
@@ -2493,13 +2471,10 @@
             arr.forEach((u, i) => {
                 const winCount = hasParticipantWon(u);
                 const isWinner = winCount > 0;
-                // Yellow label with count
-                const winnerLabel = isWinner ? `<span style="color:#eab308; font-weight:800; margin-left:8px; text-shadow:0 0 10px rgba(234,179,8,0.8);">ВЫИГРЫВАЛ ${winCount}</span>` : '';
-                
-                // Determine if inactive based on filter
+                const winnerLabel = isWinner ? `<span class="participant-win-tag">ВЫИГРЫВАЛ ${winCount}</span>` : '';
                 const isInactive = neverWonOnly && isWinner;
                 
-                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
+                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><div style="display:flex; gap:8px; align-items:center;"><button class="btn-main" style="padding:4px 10px; margin-bottom:0; font-size:11px; min-width:70px;" onclick="toggleParticipantWinner('${u.replace(/'/g, "\\'")}', ${!isWinner})">${isWinner ? '✓ ПОБЕЖДАЛ' : 'ПОБЕЖДАЛ'}</button><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
         }
@@ -2620,29 +2595,6 @@
         }
         function pasteParticipants() { openImportParticipants(); }
         setInterval(() => { if (timerRunning && timerSeconds > 0) { timerSeconds--; updateTimerDisplay(); if(timerSeconds === 0) playAlarm(); } }, 1000);
-        function hasParticipantWon(name) {
-            // Count wins excluding rerolls
-            return globalHistory.filter(h => h.name.toLowerCase() === name.toLowerCase() && !h.isReroll).length;
-        }
-        function updateFullParticipantsList() {
-            const container = document.getElementById('full-participants-list');
-            if (!container) return;
-            const arr = Array.from(participants);
-            const neverWonOnly = document.getElementById('filter-never-won-checkbox')?.checked;
-            let html = '';
-            arr.forEach((u, i) => {
-                const winCount = hasParticipantWon(u);
-                const isWinner = winCount > 0;
-                // Yellow label with count
-                const winnerLabel = isWinner ? `<span class="participant-win-tag">ВЫИГРЫВАЛ ${winCount}</span>` : '';
-
-                // Determine if inactive based on filter
-                const isInactive = neverWonOnly && isWinner;
-                
-                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
-            });
-            container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
-        };
         let leaderEditIndex = -1;
         function openLeaderEdit(index) {
             if (index < 0 || index >= leaders.length) return;
@@ -2694,6 +2646,7 @@
             document.getElementById('nick-edit-tg').value = stats.tg || '';
             document.getElementById('nick-edit-amount').value = stats.amount || 0;
             document.getElementById('nick-edit-deposit').value = stats.deposit || 0;
+            document.getElementById('nick-edit-wins').value = stats.winCount || 0;
             document.getElementById('nick-edit-rerolls').value = stats.rerolls || 0;
             const siteField = document.getElementById('nick-edit-site');
             if (siteField) {
@@ -2754,6 +2707,7 @@
             const targetSite = (document.getElementById('nick-edit-site')?.value || '---').trim() || '---';
             const targetAmount = parseFloat(document.getElementById('nick-edit-amount')?.value || '0') || 0;
             const targetDeposit = parseFloat(document.getElementById('nick-edit-deposit')?.value || '0') || 0;
+            const targetWins = Math.max(0, parseInt(document.getElementById('nick-edit-wins')?.value || '0', 10) || 0);
             const targetRerolls = Math.max(0, parseInt(document.getElementById('nick-edit-rerolls')?.value || '0', 10) || 0);
             if (!newName) {
                 setNickSearchStatus('Никнейм не может быть пустым.');
@@ -2773,6 +2727,7 @@
             const renamedStats = getNickAggregateStats(newName);
             const currentAmount = renamedStats?.amount || 0;
             const currentDeposit = renamedStats?.deposit || 0;
+            const currentWins = renamedStats?.winCount || 0;
             const currentRerolls = renamedStats?.rerolls || 0;
             const amountDiff = targetAmount - currentAmount;
             const depositDiff = targetDeposit - currentDeposit;
@@ -2787,6 +2742,31 @@
                     rerolls: 0,
                     date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
                 });
+            }
+
+            // Handle wins
+            if (targetWins > currentWins) {
+                for (let i = currentWins + 1; i <= targetWins; i++) {
+                    globalHistory.push({
+                        name: newName,
+                        amount: 0,
+                        deposit: 0,
+                        site: targetSite === '---' ? '---' : targetSite,
+                        tg: tg || getSavedTelegram(newName) || '---',
+                        rerolls: 0,
+                        isReroll: false,
+                        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
+                    });
+                }
+            } else if (targetWins < currentWins) {
+                let needToRemove = currentWins - targetWins;
+                for (let i = globalHistory.length - 1; i >= 0 && needToRemove > 0; i--) {
+                    const item = globalHistory[i];
+                    if (item && !item.isReroll && item.name && item.name.toLowerCase() === newName.toLowerCase()) {
+                        globalHistory.splice(i, 1);
+                        needToRemove--;
+                    }
+                }
             }
 
             if (targetRerolls > currentRerolls) {
@@ -3434,6 +3414,8 @@
                 m.style.display = 'none';
             }); 
             document.getElementById('winner-screen').style.display = 'none'; 
+            const nickModal = document.getElementById('nick-search-modal');
+            if (nickModal) nickModal.classList.remove('show');
             winTimerActive = false; 
             clearInterval(window.winInt);
             // Останавливаем автокрут при закрытии окна рулетки
@@ -3484,13 +3466,10 @@
             arr.forEach((u, i) => {
                 const winCount = hasParticipantWon(u);
                 const isWinner = winCount > 0;
-                // Yellow label with count
                 const winnerLabel = isWinner ? `<span class="participant-win-tag">ВЫИГРЫВАЛ ${winCount}</span>` : '';
-                
-                // Determine if inactive based on filter
                 const isInactive = neverWonOnly && isWinner;
                 
-                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
+                html += `<div class="participant-row${isInactive ? ' is-inactive' : ''}"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span class="participant-name-text">${i + 1}. <b>${u}</b>${winnerLabel}</span></span><div style="display:flex; gap:8px; align-items:center;"><button class="btn-main" style="padding:4px 10px; margin-bottom:0; font-size:11px; min-width:70px;" onclick="toggleParticipantWinner('${u.replace(/'/g, "\\'")}', ${!isWinner})">${isWinner ? '✓ ПОБЕЖДАЛ' : 'ПОБЕЖДАЛ'}</button><label><input type="checkbox" ${isInactive ? 'disabled' : 'checked'} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
         };
@@ -4570,7 +4549,115 @@
             playTimerEndSound(selectedTimerSound);
         };
 
+        // ===== NICK SEARCH MODAL FUNCTIONS =====
+        function openNickSearchModal() {
+            const modal = document.getElementById('nick-search-modal');
+            if (modal) modal.classList.add('show');
+        }
+        function closeNickSearchModal() {
+            const modal = document.getElementById('nick-search-modal');
+            if (modal) modal.classList.remove('show');
+        }
+
+        // ===== TOGGLE PARTICIPANT WINNER =====
+        function toggleParticipantWinner(name, markAsWinner) {
+            if (markAsWinner) {
+                // Add as a win entry
+                if (!globalHistory.find(h => h.name.toLowerCase() === name.toLowerCase() && !h.isReroll)) {
+                    globalHistory.push({
+                        name: name,
+                        amount: 0,
+                        deposit: 0,
+                        site: '---',
+                        tg: getSavedTelegram(name) || '---',
+                        rerolls: 0,
+                        isReroll: false,
+                        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
+                    });
+                }
+            } else {
+                // Remove win entries (keep reroll entries)
+                globalHistory = globalHistory.filter(h => !(h.name.toLowerCase() === name.toLowerCase() && !h.isReroll));
+            }
+            saveToStorage();
+            cloudSaveAppStateDebounced();
+            updateFullParticipantsList();
+            renderLeaderboard();
+        }
+
     </script>
+
+    <!-- NICK SEARCH MODAL -->
+    <div id="nick-search-modal" class="nick-search-modal">
+        <div class="nick-search-modal-content">
+            <span class="nick-search-modal-close" onclick="closeNickSearchModal()">&times;</span>
+            <h2 style="margin:0 0 20px 0; color: var(--accent-neon-blue); text-shadow: none;">Поиск Ника</h2>
+            <p class="nick-search-copy">Найди игрока и быстро поправь его статистику: реролы, выводы, депы и сайт.</p>
+            <div class="nick-search-row">
+                <input id="nick-search-input" type="text" placeholder="Введите ник" onkeydown="if(event.key === 'Enter'){ searchNickStats(); }">
+                <button class="btn-main nick-search-btn" onclick="searchNickStats()">Найти</button>
+            </div>
+            <div id="nick-search-status" class="nick-search-status"></div>
+            <div id="nick-search-result" class="nick-search-result">
+                <input id="nick-editor-source" type="hidden">
+                <div class="nick-search-meta">
+                    <div class="nick-search-pill">
+                        <strong id="nick-found-name">---</strong>
+                        <span>Найденный игрок</span>
+                    </div>
+                    <div class="nick-search-pill">
+                        <strong id="nick-found-records">0</strong>
+                        <span>Записей в истории</span>
+                    </div>
+                    <div class="nick-search-pill">
+                        <strong id="nick-found-wins">0</strong>
+                        <span>Побед / выводов</span>
+                    </div>
+                    <div class="nick-search-pill">
+                        <strong id="nick-found-rerolls">0</strong>
+                        <span>Реролов</span>
+                    </div>
+                </div>
+                <div class="nick-edit-grid">
+                    <div class="nick-edit-field full">
+                        <label for="nick-edit-name">Никнейм</label>
+                        <input id="nick-edit-name" type="text" placeholder="Никнейм">
+                    </div>
+                    <div class="nick-edit-field full">
+                        <label for="nick-edit-tg">Telegram</label>
+                        <input id="nick-edit-tg" type="text" placeholder="@username">
+                    </div>
+                    <div class="nick-edit-field">
+                        <label for="nick-edit-amount">Выводы (₽)</label>
+                        <input id="nick-edit-amount" type="number" placeholder="0">
+                    </div>
+                    <div class="nick-edit-field">
+                        <label for="nick-edit-deposit">Депозиты (₽)</label>
+                        <input id="nick-edit-deposit" type="number" placeholder="0">
+                    </div>
+                    <div class="nick-edit-field">
+                        <label for="nick-edit-wins">Побеждал</label>
+                        <input id="nick-edit-wins" type="number" min="0" placeholder="0">
+                    </div>
+                    <div class="nick-edit-field">
+                        <label for="nick-edit-rerolls">Реролы</label>
+                        <input id="nick-edit-rerolls" type="number" min="0" placeholder="0">
+                    </div>
+                    <div class="nick-edit-field">
+                        <label for="nick-edit-site">Сайт</label>
+                        <select id="nick-edit-site">
+                            <option value="---">---</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="nick-search-actions">
+                    <button class="btn-main" onclick="applyNickStatsEdit()">Сохранить</button>
+                    <button class="btn-main btn-purple" onclick="clearNickSearch()">Очистить</button>
+                </div>
+                <div class="nick-search-note">Суммы меняются через корректировку в истории, а ник, Telegram, реролы и сайт обновляются сразу во всех его записях.</div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
