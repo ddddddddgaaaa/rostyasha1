@@ -673,6 +673,125 @@
             height: 16px;
             accent-color: #eab308;
         }
+        .nick-search-card {
+            margin-top: 12px;
+            padding: 16px;
+            border-radius: 18px;
+            background:
+                linear-gradient(180deg, rgba(255, 20, 147, 0.1), rgba(15, 23, 42, 0.72)),
+                rgba(255,255,255,0.02);
+            border: 1px solid rgba(255, 20, 147, 0.18);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .nick-search-card h4 {
+            margin: 0 0 8px;
+            color: var(--accent-neon-blue);
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .nick-search-copy {
+            margin: 0 0 12px;
+            color: #cbd5e1;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        .nick-search-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+        }
+        .nick-search-card input,
+        .nick-search-card select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(2, 6, 23, 0.82) !important;
+            border: 1px solid rgba(255, 20, 147, 0.18) !important;
+            color: var(--soft-light) !important;
+            font-size: 13px;
+        }
+        .nick-search-btn {
+            width: auto;
+            min-width: 104px;
+            margin: 0;
+            padding: 10px 14px;
+        }
+        .nick-search-result {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .nick-search-result.is-visible {
+            display: block;
+        }
+        .nick-search-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .nick-search-pill {
+            padding: 10px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .nick-search-pill strong {
+            display: block;
+            color: #f8fafc;
+            font-size: 15px;
+            margin-bottom: 3px;
+        }
+        .nick-search-pill span {
+            color: #94a3b8;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .nick-edit-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .nick-edit-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .nick-edit-field.full {
+            grid-column: 1 / -1;
+        }
+        .nick-edit-field label {
+            color: #94a3b8;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .nick-search-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .nick-search-note {
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+        .nick-search-status {
+            min-height: 16px;
+            margin-top: 10px;
+            color: #fda4af;
+            font-size: 11px;
+        }
+        .nick-search-status.is-success {
+            color: #86efac;
+        }
         .participant-name-text {
             min-width: 0;
             overflow: hidden;
@@ -1160,6 +1279,69 @@
             <button class="btn-main btn-purple" onclick="instantRoll()">БЫСТРЫЙ РОЛЛ</button>
             <button class="btn-main" onclick="openStats()">АНАЛИТИКА ПРОЕКТОВ</button>
             <button class="btn-main" onclick="openHistory()">ИСТОРИЯ ВЫПАДЕНИЙ</button>
+            <div class="nick-search-card">
+                <h4>Поиск Ника</h4>
+                <p class="nick-search-copy">Найди игрока и быстро поправь его статистику: реролы, выводы, депы и сайт.</p>
+                <div class="nick-search-row">
+                    <input id="nick-search-input" type="text" placeholder="Введите ник" onkeydown="if(event.key === 'Enter'){ searchNickStats(); }">
+                    <button class="btn-main nick-search-btn" onclick="searchNickStats()">Найти</button>
+                </div>
+                <div id="nick-search-status" class="nick-search-status"></div>
+                <div id="nick-search-result" class="nick-search-result">
+                    <input id="nick-editor-source" type="hidden">
+                    <div class="nick-search-meta">
+                        <div class="nick-search-pill">
+                            <strong id="nick-found-name">---</strong>
+                            <span>Найденный игрок</span>
+                        </div>
+                        <div class="nick-search-pill">
+                            <strong id="nick-found-records">0</strong>
+                            <span>Записей в истории</span>
+                        </div>
+                        <div class="nick-search-pill">
+                            <strong id="nick-found-wins">0</strong>
+                            <span>Побед / выводов</span>
+                        </div>
+                        <div class="nick-search-pill">
+                            <strong id="nick-found-rerolls">0</strong>
+                            <span>Реролов</span>
+                        </div>
+                    </div>
+                    <div class="nick-edit-grid">
+                        <div class="nick-edit-field full">
+                            <label for="nick-edit-name">Никнейм</label>
+                            <input id="nick-edit-name" type="text" placeholder="Никнейм">
+                        </div>
+                        <div class="nick-edit-field full">
+                            <label for="nick-edit-tg">Telegram</label>
+                            <input id="nick-edit-tg" type="text" placeholder="@username">
+                        </div>
+                        <div class="nick-edit-field">
+                            <label for="nick-edit-amount">Выводы (₽)</label>
+                            <input id="nick-edit-amount" type="number" placeholder="0">
+                        </div>
+                        <div class="nick-edit-field">
+                            <label for="nick-edit-deposit">Депозиты (₽)</label>
+                            <input id="nick-edit-deposit" type="number" placeholder="0">
+                        </div>
+                        <div class="nick-edit-field">
+                            <label for="nick-edit-rerolls">Реролы</label>
+                            <input id="nick-edit-rerolls" type="number" min="0" placeholder="0">
+                        </div>
+                        <div class="nick-edit-field">
+                            <label for="nick-edit-site">Сайт</label>
+                            <select id="nick-edit-site">
+                                <option value="---">---</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="nick-search-actions">
+                        <button class="btn-main" onclick="applyNickStatsEdit()">Сохранить</button>
+                        <button class="btn-main btn-purple" onclick="clearNickSearch()">Очистить</button>
+                    </div>
+                    <div class="nick-search-note">Суммы меняются через корректировку в истории, а ник, Telegram, реролы и сайт обновляются сразу во всех его записях.</div>
+                </div>
+            </div>
             <div class="filter-card">
                 <label class="filter-toggle" style="margin-bottom:0;">
                     <input id="filter-never-won-checkbox" type="checkbox">
@@ -1768,10 +1950,14 @@
         function renderSiteSelects() {
             const winSel = document.getElementById('win-site-select');
             const manSel = document.getElementById('manual-site-select');
-            [winSel, manSel].forEach(sel => {
+            const nickSel = document.getElementById('nick-edit-site');
+            [winSel, manSel, nickSel].forEach(sel => {
                 if (!sel) return;
                 const curr = sel.value || '---';
                 sel.innerHTML = '<option value="---">---</option>' + (siteOptions || []).map(s => `<option value="${escapeHtml(s)}">${s}</option>`).join('');
+                if (curr && curr !== '---' && !(siteOptions || []).includes(curr)) {
+                    sel.innerHTML += `<option value="${escapeHtml(curr)}">${curr}</option>`;
+                }
                 try { sel.value = curr; } catch(e){}
             });
         }
@@ -2470,6 +2656,190 @@
         function closeLeaderEditModal() {
             document.getElementById('leader-edit-modal').style.display = 'none';
             leaderEditIndex = -1;
+        }
+        function getNickAggregateStats(name) {
+            const normalized = (name || '').trim().toLowerCase();
+            if (!normalized) return null;
+            const entries = globalHistory.filter(h => h && h.name && h.name.toLowerCase() === normalized);
+            if (!entries.length) return null;
+            const normalEntries = entries.filter(h => !h.isReroll);
+            const rerollEntries = entries.filter(h => h.isReroll);
+            const latestEntry = [...entries].reverse().find(Boolean) || null;
+            const latestNormalEntry = [...normalEntries].reverse().find(Boolean) || null;
+            return {
+                sourceName: latestEntry?.name || name.trim(),
+                recordCount: entries.length,
+                winCount: normalEntries.length,
+                rerolls: rerollEntries.length,
+                amount: normalEntries.reduce((sum, h) => sum + (Number(h.amount) || 0), 0),
+                deposit: normalEntries.reduce((sum, h) => sum + (Number(h.deposit) || 0), 0),
+                tg: (latestEntry?.tg && latestEntry.tg !== '---' ? latestEntry.tg : (getSavedTelegram(latestEntry?.name || name.trim()) || '')),
+                site: latestNormalEntry?.site || '---'
+            };
+        }
+        function setNickSearchStatus(message, isSuccess = false) {
+            const status = document.getElementById('nick-search-status');
+            if (!status) return;
+            status.textContent = message || '';
+            status.classList.toggle('is-success', !!isSuccess);
+        }
+        function fillNickSearchEditor(stats) {
+            if (!stats) return;
+            document.getElementById('nick-editor-source').value = stats.sourceName || '';
+            document.getElementById('nick-found-name').innerText = stats.sourceName || '---';
+            document.getElementById('nick-found-records').innerText = String(stats.recordCount || 0);
+            document.getElementById('nick-found-wins').innerText = String(stats.winCount || 0);
+            document.getElementById('nick-found-rerolls').innerText = String(stats.rerolls || 0);
+            document.getElementById('nick-edit-name').value = stats.sourceName || '';
+            document.getElementById('nick-edit-tg').value = stats.tg || '';
+            document.getElementById('nick-edit-amount').value = stats.amount || 0;
+            document.getElementById('nick-edit-deposit').value = stats.deposit || 0;
+            document.getElementById('nick-edit-rerolls').value = stats.rerolls || 0;
+            const siteField = document.getElementById('nick-edit-site');
+            if (siteField) {
+                if (stats.site && stats.site !== '---' && !Array.from(siteField.options).some(option => option.value === stats.site)) {
+                    siteField.innerHTML += `<option value="${escapeHtml(stats.site)}">${stats.site}</option>`;
+                }
+                siteField.value = stats.site || '---';
+            }
+            document.getElementById('nick-search-result').classList.add('is-visible');
+        }
+        function searchNickStats() {
+            const input = document.getElementById('nick-search-input');
+            const query = (input?.value || '').trim();
+            if (!query) {
+                setNickSearchStatus('Сначала введи ник для поиска.');
+                return;
+            }
+            const stats = getNickAggregateStats(query);
+            if (!stats) {
+                document.getElementById('nick-search-result').classList.remove('is-visible');
+                setNickSearchStatus(`Ник "${query}" не найден в истории.`);
+                return;
+            }
+            fillNickSearchEditor(stats);
+            setNickSearchStatus(`Ник "${stats.sourceName}" найден и готов к редактированию.`, true);
+        }
+        function clearNickSearch() {
+            const fields = [
+                'nick-search-input',
+                'nick-editor-source',
+                'nick-edit-name',
+                'nick-edit-tg',
+                'nick-edit-amount',
+                'nick-edit-deposit',
+                'nick-edit-rerolls'
+            ];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const siteField = document.getElementById('nick-edit-site');
+            if (siteField) siteField.value = '---';
+            document.getElementById('nick-found-name').innerText = '---';
+            document.getElementById('nick-found-records').innerText = '0';
+            document.getElementById('nick-found-wins').innerText = '0';
+            document.getElementById('nick-found-rerolls').innerText = '0';
+            document.getElementById('nick-search-result').classList.remove('is-visible');
+            setNickSearchStatus('');
+        }
+        function applyNickStatsEdit() {
+            const sourceName = (document.getElementById('nick-editor-source')?.value || '').trim();
+            if (!sourceName) {
+                setNickSearchStatus('Сначала найди ник, который нужно изменить.');
+                return;
+            }
+            const newName = (document.getElementById('nick-edit-name')?.value || '').trim();
+            const tg = (document.getElementById('nick-edit-tg')?.value || '').trim();
+            const targetSite = (document.getElementById('nick-edit-site')?.value || '---').trim() || '---';
+            const targetAmount = parseFloat(document.getElementById('nick-edit-amount')?.value || '0') || 0;
+            const targetDeposit = parseFloat(document.getElementById('nick-edit-deposit')?.value || '0') || 0;
+            const targetRerolls = Math.max(0, parseInt(document.getElementById('nick-edit-rerolls')?.value || '0', 10) || 0);
+            if (!newName) {
+                setNickSearchStatus('Никнейм не может быть пустым.');
+                return;
+            }
+
+            const sourceKey = sourceName.toLowerCase();
+            globalHistory.forEach(h => {
+                if (!h || !h.name || h.name.toLowerCase() !== sourceKey) return;
+                h.name = newName;
+                h.tg = tg || h.tg || '---';
+                if (!h.isReroll) {
+                    h.site = targetSite;
+                }
+            });
+
+            const renamedStats = getNickAggregateStats(newName);
+            const currentAmount = renamedStats?.amount || 0;
+            const currentDeposit = renamedStats?.deposit || 0;
+            const currentRerolls = renamedStats?.rerolls || 0;
+            const amountDiff = targetAmount - currentAmount;
+            const depositDiff = targetDeposit - currentDeposit;
+
+            if (amountDiff !== 0 || depositDiff !== 0) {
+                globalHistory.push({
+                    name: newName,
+                    amount: amountDiff,
+                    deposit: depositDiff,
+                    site: targetSite === '---' ? 'Корректировка' : targetSite,
+                    tg: tg || getSavedTelegram(newName) || '---',
+                    rerolls: 0,
+                    date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
+                });
+            }
+
+            if (targetRerolls > currentRerolls) {
+                for (let i = currentRerolls + 1; i <= targetRerolls; i++) {
+                    globalHistory.push({
+                        name: newName,
+                        amount: 0,
+                        deposit: 0,
+                        site: '---',
+                        tg: tg || getSavedTelegram(newName) || '---',
+                        rerolls: i,
+                        isReroll: true,
+                        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
+                    });
+                }
+            } else if (targetRerolls < currentRerolls) {
+                let needToRemove = currentRerolls - targetRerolls;
+                for (let i = globalHistory.length - 1; i >= 0 && needToRemove > 0; i--) {
+                    const item = globalHistory[i];
+                    if (item && item.isReroll && item.name && item.name.toLowerCase() === newName.toLowerCase()) {
+                        globalHistory.splice(i, 1);
+                        needToRemove--;
+                    }
+                }
+            }
+
+            globalHistory.forEach(h => {
+                if (h && h.isReroll && h.name && h.name.toLowerCase() === newName.toLowerCase()) {
+                    h.rerolls = 0;
+                }
+            });
+            const rerollsForNick = globalHistory.filter(h => h && h.isReroll && h.name && h.name.toLowerCase() === newName.toLowerCase());
+            rerollsForNick.forEach((h, index) => {
+                h.rerolls = index + 1;
+                if (tg) h.tg = tg;
+            });
+
+            if (tg) {
+                saveParticipantTelegram(newName, tg);
+                syncParticipantTelegramToCloud(newName, tg);
+            }
+
+            saveToStorage();
+            renderLeaderboard();
+            updateFullParticipantsList();
+            cloudSaveAppStateDebounced();
+
+            const freshStats = getNickAggregateStats(newName);
+            if (freshStats) {
+                fillNickSearchEditor(freshStats);
+                document.getElementById('nick-search-input').value = newName;
+            }
+            setNickSearchStatus(`Статистика для "${newName}" обновлена.`, true);
         }
         function saveLeaderEdit() {
             if (leaderEditIndex < 0 || leaderEditIndex >= leaders.length) return;
