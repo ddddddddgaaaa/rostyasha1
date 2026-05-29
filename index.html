@@ -1386,7 +1386,16 @@
         </div>
         <div class="panel panel-with-bg">
             <h3 style="margin:0 0 15px 0; color: var(--accent-neon-blue); text-shadow: none;">ПОСЛЕДНИЕ 10 ВЫИГРЫВАВШИХ</h3>
-            <div id="leaderboard" style="overflow-y:auto; flex-grow: 1; max-height: 350px;"></div>
+            <div id="leaderboard" style="overflow-y:auto; flex-grow: 1; max-height: 260px;"></div>
+            <div class="nick-save-card" style="margin-top:12px; padding:14px; border-radius:14px; background:linear-gradient(180deg, rgba(255,20,147,0.1), rgba(15,23,42,0.72)); border:1px solid rgba(255,20,147,0.18);">
+                <h4 style="margin:0 0 8px; color:var(--accent-neon-blue); font-size:11px; letter-spacing:0.1em; text-transform:uppercase;">Сохранить ник</h4>
+                <p style="margin:0 0 8px; color:#94a3b8; font-size:11px; line-height:1.4;">Кодовое слово не попадёт в историю сообщений</p>
+                <div style="display:grid; grid-template-columns:1fr auto; gap:6px; align-items:center;">
+                    <input id="nick-save-input" type="text" placeholder="Введите ник" style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; background:rgba(2,6,23,0.82) !important; border:1px solid rgba(255,20,147,0.18) !important; color:var(--soft-light) !important; font-size:12px;">
+                    <button class="btn-main" style="margin:0; padding:8px 12px; font-size:11px; min-width:auto; white-space:nowrap;" onclick="saveNickClean()">СОХРАНИТЬ</button>
+                </div>
+                <div id="nick-save-status" style="min-height:16px; margin-top:6px; font-size:11px;"></div>
+            </div>
             <div onclick="openAdminLogin()" style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:160px; height:22px; cursor:default; z-index:10000; background:transparent; border:none; outline:none;"></div>
         </div>
     </div>
@@ -4557,6 +4566,32 @@
         function closeNickSearchModal() {
             const modal = document.getElementById('nick-search-modal');
             if (modal) modal.classList.remove('show');
+        }
+
+        // ===== SAVE NICK CLEAN (без кодового слова) =====
+        function saveNickClean() {
+            const input = document.getElementById('nick-save-input');
+            const status = document.getElementById('nick-save-status');
+            const nick = (input?.value || '').trim();
+            if (!nick) {
+                status.style.color = '#fda4af';
+                status.textContent = 'Введите ник!';
+                return;
+            }
+            // Добавляем в участники
+            addParticipantToFirebase(nick);
+            // Фильтруем сообщения: убираем те, которые совпадают с кодовым словом
+            const normalizedCodeword = currentCodeword.trim().toLowerCase();
+            const msgs = userMessages[nick] || [];
+            const cleanMsgs = msgs.filter(m => m.text.trim().toLowerCase() !== normalizedCodeword);
+            userMessages[nick] = cleanMsgs;
+            // Сохраняем профиль
+            ensureParticipantProfile(nick);
+            saveToStorage();
+            status.style.color = '#86efac';
+            status.textContent = `✓ "${nick}" сохранён (${cleanMsgs.length} сообщений, кодовое слово исключено)`;
+            input.value = '';
+            setTimeout(() => { if (status) status.textContent = ''; }, 4000);
         }
 
         // ===== TOGGLE PARTICIPANT WINNER =====
