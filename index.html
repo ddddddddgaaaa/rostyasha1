@@ -1386,17 +1386,7 @@
         </div>
         <div class="panel panel-with-bg">
             <h3 style="margin:0 0 15px 0; color: var(--accent-neon-blue); text-shadow: none;">ПОСЛЕДНИЕ 10 ВЫИГРЫВАВШИХ</h3>
-            <div id="leaderboard" style="overflow-y:auto; flex-grow: 1; max-height: 260px;"></div>
-            <div class="nick-save-card" style="margin-top:12px; padding:14px; border-radius:14px; background:linear-gradient(180deg, rgba(255,20,147,0.1), rgba(15,23,42,0.72)); border:1px solid rgba(255,20,147,0.18);">
-                <h4 style="margin:0 0 8px; color:var(--accent-neon-blue); font-size:11px; letter-spacing:0.1em; text-transform:uppercase;">Чёрный список</h4>
-                <p style="margin:0 0 8px; color:#94a3b8; font-size:11px; line-height:1.4;">Участник не сможет попасть в список участников</p>
-                <div style="display:grid; grid-template-columns:1fr auto; gap:6px; align-items:center;">
-                    <input id="nick-save-input" type="text" placeholder="Ник участника" style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; background:rgba(2,6,23,0.82) !important; border:1px solid rgba(255,20,147,0.18) !important; color:var(--soft-light) !important; font-size:12px;">
-                    <button class="btn-main" style="margin:0; padding:8px 12px; font-size:11px; min-width:auto; white-space:nowrap;" onclick="saveNickClean()">СОХРАНИТЬ</button>
-                </div>
-                <div id="nick-save-status" style="min-height:16px; margin-top:6px; font-size:11px;"></div>
-                <div id="saved-nicks-list" style="margin-top:8px; max-height:155px; overflow-y:auto; padding-right:4px;"></div>
-            </div>
+            <div id="leaderboard" style="overflow-y:auto; flex-grow: 1; max-height: 350px;"></div>
             <div onclick="openAdminLogin()" style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:160px; height:22px; cursor:default; z-index:10000; background:transparent; border:none; outline:none;"></div>
         </div>
     </div>
@@ -1535,7 +1525,6 @@
         let isWheelSpinning = false; // флаг блокировки обновления wheelParticipants во время крута
         let pendingParticipants = JSON.parse(localStorage.getItem('bot_pending_participants') || '[]'); // участники, которые написали кодовое пока рулетка открыта
         let sessionWinners = new Set(); // участники, которые выиграли в текущей сессии
-        let savedNicks = JSON.parse(localStorage.getItem('bot_saved_nicks') || '[]'); // ники, сохранённые через "Сохранить ник"
         const wheelColors = ['#0f172a','#1e2937','#334155','#475569','#64748b','#1e3a8a','#312e81','#4338ca','#4c1d95','#6b21a8'];
         
         // Color coding based on sum ranges
@@ -2366,10 +2355,7 @@
                 recordParticipantActivity(user);
 
                 if (normalizedMessage === normalizedCodeword) {
-                    // Если ник в savedNicks — не добавляем в участники
-                    if (!savedNicks.some(s => s.toLowerCase() === user.toLowerCase())) {
-                        addParticipantToFirebase(user);
-                    }
+                    addParticipantToFirebase(user);
                 }
 
                 if (currentWinner && user.toLowerCase() === currentWinner.toLowerCase()) {
@@ -3460,7 +3446,6 @@
         try { loadSiteOptionsFromCloud(); subscribeSiteOptionsFromCloud(); } catch(e) { try { renderSiteSelects(); renderSiteOptionsList(); } catch(_) {} }
         renderLeaderboard();
         updateFullParticipantsList();
-        renderSavedNicks();
         // load wheel participants from localStorage (if any)
         try { wheelParticipants = JSON.parse(localStorage.getItem('bot_wheel_participants') || '[]'); } catch(e) { wheelParticipants = []; }
         setImportFormat('csv');
@@ -4572,62 +4557,6 @@
         function closeNickSearchModal() {
             const modal = document.getElementById('nick-search-modal');
             if (modal) modal.classList.remove('show');
-        }
-
-        // ===== SAVE NICK CLEAN (без кодового слова) =====
-        function saveNickClean() {
-            const input = document.getElementById('nick-save-input');
-            const status = document.getElementById('nick-save-status');
-            const nick = (input?.value || '').trim();
-            if (!nick) {
-                status.style.color = '#fda4af';
-                status.textContent = 'Введите ник!';
-                return;
-            }
-            // Проверяем, не добавлен ли уже
-            if (savedNicks.some(s => s.toLowerCase() === nick.toLowerCase())) {
-                status.style.color = '#f59e0b';
-                status.textContent = `"${nick}" уже добавлен!`;
-                input.value = '';
-                setTimeout(() => { if (status) status.textContent = ''; }, 3000);
-                return;
-            }
-            // Добавляем в savedNicks (НЕ в participants)
-            savedNicks.push(nick);
-            try { localStorage.setItem('bot_saved_nicks', JSON.stringify(savedNicks)); } catch(e) {}
-            // Фильтруем сообщения: убираем те, которые совпадают с кодовым словом
-            const normalizedCodeword = currentCodeword.trim().toLowerCase();
-            const msgs = userMessages[nick] || [];
-            const cleanMsgs = msgs.filter(m => m.text.trim().toLowerCase() !== normalizedCodeword);
-            userMessages[nick] = cleanMsgs;
-            // Сохраняем профиль
-            ensureParticipantProfile(nick);
-            saveToStorage();
-            status.style.color = '#86efac';
-            status.textContent = `✓ "${nick}" сохранён (${cleanMsgs.length} сообщений, кодовое слово исключено)`;
-            input.value = '';
-            renderSavedNicks();
-            setTimeout(() => { if (status) status.textContent = ''; }, 4000);
-        }
-
-        function removeSavedNick(index) {
-            const removed = savedNicks.splice(index, 1);
-            try { localStorage.setItem('bot_saved_nicks', JSON.stringify(savedNicks)); } catch(e) {}
-            saveToStorage();
-            renderSavedNicks();
-        }
-
-        function renderSavedNicks() {
-            const container = document.getElementById('saved-nicks-list');
-            if (!container) return;
-            if (savedNicks.length === 0) {
-                container.innerHTML = '<div style="color:#64748b; font-size:11px; text-align:center; padding:4px 0;">Нет сохранённых nickов</div>';
-                return;
-            }
-            container.innerHTML = savedNicks.map((nick, i) => {
-                const msgs = userMessages[nick] || [];
-                return `<div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:11px;"><span style="color:var(--accent-neon-blue);">• ${escapeHtml(nick)} <span style="color:#64748b;">(${msgs.length} сообщ.)</span></span><button onclick="removeSavedNick(${i})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:12px; padding:0 4px;">✕</button></div>`;
-            }).join('');
         }
 
         // ===== TOGGLE PARTICIPANT WINNER =====
